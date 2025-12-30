@@ -781,8 +781,8 @@ body {
 }
 
 #send-btn.generating .icon {
-    width: 14px;
-    height: 14px;
+    width: 20px;
+    height: 20px;
     color: var(--text-primary);
 }
 
@@ -1012,6 +1012,24 @@ body {
 .message-attachment .file-name {
     font-size: 14px;
     font-weight: 500;
+}
+
+/* User message attachments - white background for contrast */
+.user-message .message-attachment {
+    background-color: #ffffff;
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+.user-message .message-attachment.file-attachment {
+    color: #1c1c1e;
+}
+
+.user-message .message-attachment .file-icon {
+    color: var(--accent-color);
+}
+
+.user-message .message-attachment .file-name {
+    color: #1c1c1e;
 }
 
 /* Image Modal */
