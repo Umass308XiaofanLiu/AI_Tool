@@ -171,7 +171,11 @@ const ChatUI = {
             const headerDiv = document.createElement('div');
             headerDiv.className = 'message-header';
             headerDiv.innerHTML = `
-                <div class="assistant-icon">✦</div>
+                <div class="assistant-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                </div>
                 ${model ? `<span class="message-model">${model}</span>` : '<span class="message-model">Assistant</span>'}
             `;
 
@@ -186,10 +190,18 @@ const ChatUI = {
             const idx = messageIndex !== null ? messageIndex : this.getNextAssistantIndex();
             actionsDiv.innerHTML = `
                 <button class="message-action-btn" onclick="ChatUI.copyMessage(this)" data-content="${this.escapeAttr(content)}">
-                    <span>📋</span> Copy
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="9" y="9" width="13" height="13" rx="2"/>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                    </svg>
+                    Copy
                 </button>
                 <button class="message-action-btn" onclick="ChatUI.regenerateMessage(${idx})">
-                    <span>🔄</span> Regenerate
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M23 4v6h-6M1 20v-6h6"/>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                    </svg>
+                    Regenerate
                 </button>
             `;
 
@@ -223,10 +235,10 @@ const ChatUI = {
         const content = button.dataset.content;
         navigator.clipboard.writeText(content).then(() => {
             button.classList.add('copied');
-            button.innerHTML = '<span>✓</span> Copied!';
+            button.innerHTML = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Copied`;
             setTimeout(() => {
                 button.classList.remove('copied');
-                button.innerHTML = '<span>📋</span> Copy';
+                button.innerHTML = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy`;
             }, 2000);
         }).catch(err => {
             console.error('Failed to copy:', err);
@@ -335,7 +347,11 @@ const ChatUI = {
         const headerDiv = document.createElement('div');
         headerDiv.className = 'message-header';
         headerDiv.innerHTML = `
-            <div class="assistant-icon">✦</div>
+            <div class="assistant-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+            </div>
             <span class="message-model">${modelName}</span>
         `;
 
@@ -376,10 +392,18 @@ const ChatUI = {
                 const idx = ChatHistory.getMessages().length; // Will be added after this
                 actionsDiv.innerHTML = `
                     <button class="message-action-btn" onclick="ChatUI.copyMessage(this)" data-content="${this.escapeAttr(rawText)}">
-                        <span>📋</span> Copy
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="9" y="9" width="13" height="13" rx="2"/>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                        </svg>
+                        Copy
                     </button>
                     <button class="message-action-btn" onclick="ChatUI.regenerateMessage(${idx})">
-                        <span>🔄</span> Regenerate
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M23 4v6h-6M1 20v-6h6"/>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                        </svg>
+                        Regenerate
                     </button>
                 `;
                 msgDiv.appendChild(actionsDiv);
