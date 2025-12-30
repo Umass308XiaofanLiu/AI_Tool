@@ -1831,7 +1831,7 @@ body {
                 <div class="file-preview-container" id="file-preview-container"></div>
 
                 <div class="input-container">
-                    <input type="file" id="file-input" accept="image/*,.pdf,.txt,.md,.json,.csv" multiple hidden>
+                    <input type="file" id="file-input" accept="image/*,.pdf,.txt,.md,.json,.csv,.py,.js,.ts,.jsx,.tsx,.java,.c,.cpp,.h,.hpp,.cs,.go,.rs,.swift,.kt,.m,.r,.rb,.php,.sql,.sh,.bash,.zsh,.ps1,.yaml,.yml,.xml,.html,.css,.scss,.sass,.less,.vue,.svelte,.lua,.pl,.pm,.scala,.groovy,.dart,.f90,.f95,.jl,.hs,.clj,.ex,.exs,.erl,.ml,.fs,.v,.sv,.vhd,.asm,.s,.ipynb" multiple hidden>
                     <button id="attach-btn" title="Attach files">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                             <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" stroke-linecap="round" stroke-linejoin="round"/>
@@ -3151,6 +3151,38 @@ const ChatHistory = {
         return this.chats[id].messages;
     },
 
+    // Get messages for display - respects branching
+    getDisplayMessages(chatId = null) {
+        const id = chatId || this.currentChatId;
+        if (!id || !this.chats[id]) return [];
+
+        const messages = this.chats[id].messages;
+        const result = [];
+
+        for (let i = 0; i < messages.length; i++) {
+            const msg = messages[i];
+            result.push(msg);
+
+            // If this message has history and current branch has continuation that's truncated
+            // We stop here and don't show messages after
+            if (msg.responseHistory && msg.currentHistoryIndex !== undefined) {
+                const currentEntry = msg.responseHistory[msg.currentHistoryIndex];
+                if (currentEntry && currentEntry.truncateAfter) {
+                    break;
+                }
+            }
+        }
+
+        return result;
+    },
+
+    // Get messages for API - only up to a certain point for regeneration
+    getMessagesForAPI(upToIndex) {
+        if (!this.currentChatId || !this.chats[this.currentChatId]) return [];
+        const messages = this.chats[this.currentChatId].messages;
+        return messages.slice(0, upToIndex);
+    },
+
     setMessages(messages, chatId = null) {
         const id = chatId || this.currentChatId;
         if (!id || !this.chats[id]) return false;
@@ -3209,8 +3241,8 @@ const ChatHistory = {
         return null;
     },
 
-    // Update message at specific index with response history support
-    updateMessageWithHistory(messageIndex, newContent, newModel) {
+    // Prepare for regeneration - stores continuation and prepares for new branch
+    prepareRegenerate(messageIndex) {
         if (!this.currentChatId || !this.chats[this.currentChatId]) return false;
 
         const messages = this.chats[this.currentChatId].messages;
@@ -3223,16 +3255,40 @@ const ChatHistory = {
             message.responseHistory = [{
                 content: message.content,
                 model: message.model,
-                timestamp: message.timestamp
+                timestamp: message.timestamp,
+                continuation: messages.slice(messageIndex + 1) // Store all messages after this
             }];
             message.currentHistoryIndex = 0;
+        } else {
+            // Update current entry's continuation with any new messages
+            const currentEntry = message.responseHistory[message.currentHistoryIndex];
+            if (currentEntry && !currentEntry.continuation) {
+                currentEntry.continuation = messages.slice(messageIndex + 1);
+            }
         }
 
-        // Add new response to history
+        // Truncate messages array to this point (visually creating new branch)
+        this.chats[this.currentChatId].messages = messages.slice(0, messageIndex + 1);
+
+        this.save();
+        return true;
+    },
+
+    // Complete regeneration - add new response as new branch
+    completeRegenerate(messageIndex, newContent, newModel) {
+        if (!this.currentChatId || !this.chats[this.currentChatId]) return false;
+
+        const messages = this.chats[this.currentChatId].messages;
+        if (messageIndex < 0 || messageIndex >= messages.length) return false;
+
+        const message = messages[messageIndex];
+
+        // Add new response to history (without continuation - it's a new branch)
         message.responseHistory.push({
             content: newContent,
             model: newModel,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            continuation: [] // New branch starts empty
         });
 
         // Update current display to new response
@@ -3246,7 +3302,7 @@ const ChatHistory = {
         return true;
     },
 
-    // Navigate response history
+    // Navigate response history with branch support
     navigateHistory(messageIndex, direction) {
         if (!this.currentChatId || !this.chats[this.currentChatId]) return null;
 
@@ -3261,14 +3317,45 @@ const ChatHistory = {
         if (newIndex >= message.responseHistory.length) newIndex = message.responseHistory.length - 1;
 
         if (newIndex !== message.currentHistoryIndex) {
+            // Save current continuation before switching
+            const currentEntry = message.responseHistory[message.currentHistoryIndex];
+            if (currentEntry) {
+                currentEntry.continuation = messages.slice(messageIndex + 1);
+            }
+
+            // Switch to new history entry
             message.currentHistoryIndex = newIndex;
             const historyItem = message.responseHistory[newIndex];
             message.content = historyItem.content;
             message.model = historyItem.model;
+
+            // Restore continuation from new branch
+            const continuation = historyItem.continuation || [];
+            this.chats[this.currentChatId].messages = [
+                ...messages.slice(0, messageIndex + 1),
+                ...continuation
+            ];
+
             this.save();
             return historyItem;
         }
         return null;
+    },
+
+    // Get branch info for a message
+    getBranchInfo(messageIndex) {
+        if (!this.currentChatId || !this.chats[this.currentChatId]) return null;
+
+        const messages = this.chats[this.currentChatId].messages;
+        if (messageIndex < 0 || messageIndex >= messages.length) return null;
+
+        const message = messages[messageIndex];
+        if (!message.responseHistory || message.responseHistory.length <= 1) return null;
+
+        return {
+            current: message.currentHistoryIndex + 1,
+            total: message.responseHistory.length
+        };
     },
 
     save() {
@@ -3603,12 +3690,54 @@ const ChatUI = {
                 continue;
             }
 
-            // Determine if it's a text-based file
-            const textExtensions = ['.txt', '.md', '.json', '.csv', '.xml', '.html', '.css', '.js', '.py', '.java', '.c', '.cpp', '.h', '.sh', '.yaml', '.yml', '.log'];
+            // Determine if it's a text-based file (including code files)
+            const textExtensions = [
+                // Text files
+                '.txt', '.md', '.json', '.csv', '.xml', '.yaml', '.yml', '.log', '.ini', '.conf', '.cfg',
+                // Web development
+                '.html', '.htm', '.css', '.scss', '.sass', '.less', '.js', '.jsx', '.ts', '.tsx', '.vue', '.svelte',
+                // Programming languages
+                '.py', '.pyw', '.pyi',           // Python
+                '.java', '.kt', '.kts',          // Java/Kotlin
+                '.c', '.h', '.cpp', '.hpp', '.cc', '.cxx', '.hxx',  // C/C++
+                '.cs',                           // C#
+                '.go',                           // Go
+                '.rs',                           // Rust
+                '.swift',                        // Swift
+                '.m', '.mm',                     // Objective-C / MATLAB
+                '.r', '.R',                      // R
+                '.rb',                           // Ruby
+                '.php',                          // PHP
+                '.pl', '.pm',                    // Perl
+                '.lua',                          // Lua
+                '.scala',                        // Scala
+                '.groovy',                       // Groovy
+                '.dart',                         // Dart
+                '.jl',                           // Julia
+                '.hs',                           // Haskell
+                '.clj', '.cljs', '.cljc',        // Clojure
+                '.ex', '.exs',                   // Elixir
+                '.erl',                          // Erlang
+                '.ml', '.mli',                   // OCaml
+                '.fs', '.fsi', '.fsx',           // F#
+                '.f90', '.f95', '.f03', '.f',    // Fortran
+                // Shell scripts
+                '.sh', '.bash', '.zsh', '.fish', '.ps1', '.bat', '.cmd',
+                // Database
+                '.sql',
+                // Assembly
+                '.asm', '.s',
+                // Hardware description
+                '.v', '.sv', '.vhd', '.vhdl',
+                // Other
+                '.ipynb', '.tex', '.bib', '.toml', '.dockerfile'
+            ];
             const fileName = file.name.toLowerCase();
             const isTextFile = textExtensions.some(ext => fileName.endsWith(ext)) ||
                               file.type.startsWith('text/') ||
-                              file.type === 'application/json';
+                              file.type === 'application/json' ||
+                              file.type === 'application/javascript' ||
+                              file.type === 'application/typescript';
             const isPDF = file.type === 'application/pdf' || fileName.endsWith('.pdf');
 
             // Create file object with preview
@@ -4010,6 +4139,12 @@ const ChatUI = {
         const lastUserMsg = messagesUpTo.filter(m => m.role === 'user').pop();
         if (!lastUserMsg) return;
 
+        // Prepare for regeneration - this stores the current branch
+        ChatHistory.prepareRegenerate(messageIndex);
+
+        // Clear UI from this message onwards and show streaming placeholder
+        this.clearMessagesFrom(messageIndex);
+
         // Get selected model
         const selector = document.getElementById('model-selector');
         const [provider, modelId] = selector.value.split(':');
@@ -4061,8 +4196,8 @@ const ChatUI = {
             // Finish streaming display
             this.finishStreaming();
 
-            // Update message with history instead of replacing
-            ChatHistory.updateMessageWithHistory(messageIndex, fullResponse, modelName);
+            // Complete regeneration - add new response as new branch
+            ChatHistory.completeRegenerate(messageIndex, fullResponse, modelName);
 
             // Reload UI to show updated message with history navigation
             this.loadMessages(ChatHistory.getMessages());
@@ -4357,6 +4492,14 @@ const ChatUI = {
         this.finishStreaming();
         this.setGenerating(false);
         this.focusInput();
+    },
+
+    clearMessagesFrom(messageIndex) {
+        // Remove all message elements from messageIndex onwards
+        const messageElements = this.messagesContainer.querySelectorAll('.message');
+        for (let i = messageIndex; i < messageElements.length; i++) {
+            messageElements[i].remove();
+        }
     },
 
     clear() {
