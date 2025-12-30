@@ -166,6 +166,14 @@ const ChatUI = {
                 continue;
             }
 
+            // Determine if it's a text-based file
+            const textExtensions = ['.txt', '.md', '.json', '.csv', '.xml', '.html', '.css', '.js', '.py', '.java', '.c', '.cpp', '.h', '.sh', '.yaml', '.yml', '.log'];
+            const fileName = file.name.toLowerCase();
+            const isTextFile = textExtensions.some(ext => fileName.endsWith(ext)) ||
+                              file.type.startsWith('text/') ||
+                              file.type === 'application/json';
+            const isPDF = file.type === 'application/pdf' || fileName.endsWith('.pdf');
+
             // Create file object with preview
             const fileObj = {
                 id: Date.now() + Math.random().toString(36).substr(2, 9),
@@ -174,20 +182,39 @@ const ChatUI = {
                 size: file.size,
                 type: file.type,
                 isImage: file.type.startsWith('image/'),
-                dataUrl: null
+                isTextFile: isTextFile,
+                isPDF: isPDF,
+                dataUrl: null,
+                textContent: null
             };
 
             // Read file for preview and API
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                fileObj.dataUrl = e.target.result;
-                this.updateFilePreview();
-            };
-
             if (fileObj.isImage) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    fileObj.dataUrl = e.target.result;
+                    this.updateFilePreview();
+                };
+                reader.readAsDataURL(file);
+            } else if (isTextFile) {
+                // Read text files as text
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    fileObj.textContent = e.target.result;
+                    this.updateFilePreview();
+                };
+                reader.readAsText(file);
+            } else if (isPDF) {
+                // For PDF, read as base64 for potential API support
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    fileObj.dataUrl = e.target.result;
+                    this.updateFilePreview();
+                };
                 reader.readAsDataURL(file);
             } else {
-                reader.readAsDataURL(file);
+                // Other files, just store metadata
+                this.updateFilePreview();
             }
 
             this.pendingFiles.push(fileObj);
@@ -591,37 +618,63 @@ const ChatUI = {
 
     prepareMessagesForAPI(messages) {
         return messages.map(m => {
-            // If message has image attachments, format for vision APIs
-            if (m.attachments && m.attachments.some(a => a.isImage)) {
+            // Check if message has attachments
+            if (m.attachments && m.attachments.length > 0) {
+                const hasImages = m.attachments.some(a => a.isImage);
+                const hasTextFiles = m.attachments.some(a => a.isTextFile || a.isPDF);
+
+                // Build combined content
+                let combinedText = '';
                 const content = [];
 
-                // Add images first
+                // Process text file attachments - add content to message text
                 m.attachments.forEach(att => {
-                    if (att.isImage && att.dataUrl) {
-                        // Extract base64 from data URL
-                        const base64Match = att.dataUrl.match(/^data:([^;]+);base64,(.+)$/);
-                        if (base64Match) {
-                            content.push({
-                                type: 'image_url',
-                                image_url: {
-                                    url: att.dataUrl
-                                }
-                            });
-                        }
+                    if (att.isTextFile && att.textContent) {
+                        combinedText += `\n\n--- File: ${att.name} ---\n${att.textContent}\n--- End of ${att.name} ---\n`;
+                    } else if (att.isPDF && att.dataUrl) {
+                        // For PDF, inform the API that there's a PDF
+                        // Some APIs (like Claude) can read PDF via base64
+                        combinedText += `\n\n[Attached PDF file: ${att.name}]\n`;
                     }
                 });
 
-                // Add text content
-                if (m.content) {
-                    content.push({
-                        type: 'text',
-                        text: m.content
+                // If there are images, use multimodal format
+                if (hasImages) {
+                    // Add images first
+                    m.attachments.forEach(att => {
+                        if (att.isImage && att.dataUrl) {
+                            const base64Match = att.dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+                            if (base64Match) {
+                                content.push({
+                                    type: 'image_url',
+                                    image_url: {
+                                        url: att.dataUrl
+                                    }
+                                });
+                            }
+                        }
                     });
+
+                    // Add combined text content
+                    const fullText = (m.content || '') + combinedText;
+                    if (fullText.trim()) {
+                        content.push({
+                            type: 'text',
+                            text: fullText
+                        });
+                    }
+
+                    return {
+                        role: m.role,
+                        content: content
+                    };
                 }
 
+                // Text files only - use simple text format
+                const fullText = (m.content || '') + combinedText;
                 return {
                     role: m.role,
-                    content: content
+                    content: fullText
                 };
             }
 
@@ -731,7 +784,10 @@ const ChatUI = {
             size: f.size,
             type: f.type,
             isImage: f.isImage,
-            dataUrl: f.dataUrl
+            isTextFile: f.isTextFile,
+            isPDF: f.isPDF,
+            dataUrl: f.dataUrl,
+            textContent: f.textContent
         }));
 
         // Add user message with attachments
