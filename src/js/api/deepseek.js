@@ -2,8 +2,8 @@
 
 const DeepSeekClient = {
     MODELS: [
-        { id: 'deepseek-chat', name: 'DeepSeek V3.2', displayKey: 'deepseek-v3.2', color: '#6366f1' },
-        { id: 'deepseek-reasoner', name: 'DeepSeek V3.2 Reasoner', displayKey: 'deepseek-v3.2-reasoner', color: '#6366f1' }
+        { id: 'deepseek-chat', name: 'DeepSeek Chat', displayKey: 'deepseek-chat', color: '#6366f1' },
+        { id: 'deepseek-reasoner', name: 'DeepSeek Reasoner', displayKey: 'deepseek-reasoner', color: '#6366f1' }
     ],
 
     async chat(messages, model, apiKey, onChunk) {

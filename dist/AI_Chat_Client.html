@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Chat Client</title>
+    <!-- KaTeX for LaTeX rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <style>
         /* === styles.css === */
 /* ==================== AI Chat Client Styles ==================== */
@@ -508,6 +511,71 @@ body {
     padding-left: 16px;
     margin: 12px 0;
     color: var(--text-secondary);
+}
+
+/* LaTeX Styles */
+.latex-block {
+    margin: 16px 0;
+    padding: 16px;
+    background-color: var(--bg-secondary);
+    border-radius: 8px;
+    overflow-x: auto;
+    text-align: center;
+}
+
+.latex-inline {
+    padding: 0 2px;
+}
+
+.latex-fallback {
+    font-family: 'Times New Roman', serif;
+    font-style: italic;
+    color: var(--text-secondary);
+}
+
+.latex-error {
+    color: var(--error-color);
+    font-family: monospace;
+}
+
+/* Message Action Buttons */
+.message-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 12px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.assistant-message:hover .message-actions {
+    opacity: 1;
+}
+
+.message-action-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+}
+
+.message-action-btn:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+}
+
+.message-action-btn.copied {
+    background-color: var(--success-color);
+    color: white;
+    border-color: var(--success-color);
 }
 
 /* Streaming cursor */
@@ -1269,54 +1337,54 @@ body {
                         <div class="models-grid">
                             <!-- Gemini -->
                             <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="gemini-2.5-flash-lite" id="vis-gemini-25-flash-lite" checked>
-                                <label for="vis-gemini-25-flash-lite" style="color: #4285f4;">Gemini 2.5 Flash Lite</label>
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="gemini-2.0-flash" id="vis-gemini-20-flash" checked>
+                                <label for="vis-gemini-20-flash" style="color: #4285f4;">Gemini 2.0 Flash</label>
                             </div>
                             <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="gemini-3-flash" id="vis-gemini-3-flash" checked>
-                                <label for="vis-gemini-3-flash" style="color: #4285f4;">Gemini 3 Flash</label>
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="gemini-1.5-flash" id="vis-gemini-15-flash" checked>
+                                <label for="vis-gemini-15-flash" style="color: #4285f4;">Gemini 1.5 Flash</label>
                             </div>
                             <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="gemini-3-pro" id="vis-gemini-3-pro" checked>
-                                <label for="vis-gemini-3-pro" style="color: #4285f4;">Gemini 3 Pro</label>
-                            </div>
-
-                            <!-- GPT-5 -->
-                            <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="gpt-5-nano" id="vis-gpt-5-nano" checked>
-                                <label for="vis-gpt-5-nano" style="color: #10a37f;">GPT-5 Nano</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="gpt-5-mini" id="vis-gpt-5-mini" checked>
-                                <label for="vis-gpt-5-mini" style="color: #10a37f;">GPT-5 Mini</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="gpt-5.2" id="vis-gpt-52" checked>
-                                <label for="vis-gpt-52" style="color: #10a37f;">GPT-5.2</label>
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="gemini-1.5-pro" id="vis-gemini-15-pro" checked>
+                                <label for="vis-gemini-15-pro" style="color: #4285f4;">Gemini 1.5 Pro</label>
                             </div>
 
-                            <!-- Claude 4.5 -->
+                            <!-- GPT-4 -->
                             <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="claude-haiku-4.5" id="vis-claude-haiku-45" checked>
-                                <label for="vis-claude-haiku-45" style="color: #d97706;">Claude Haiku 4.5</label>
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="gpt-4o" id="vis-gpt-4o" checked>
+                                <label for="vis-gpt-4o" style="color: #10a37f;">GPT-4o</label>
                             </div>
                             <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="claude-sonnet-4.5" id="vis-claude-sonnet-45" checked>
-                                <label for="vis-claude-sonnet-45" style="color: #d97706;">Claude Sonnet 4.5</label>
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="gpt-4o-mini" id="vis-gpt-4o-mini" checked>
+                                <label for="vis-gpt-4o-mini" style="color: #10a37f;">GPT-4o Mini</label>
                             </div>
                             <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="claude-opus-4.5" id="vis-claude-opus-45" checked>
-                                <label for="vis-claude-opus-45" style="color: #d97706;">Claude Opus 4.5</label>
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="gpt-4-turbo" id="vis-gpt-4-turbo" checked>
+                                <label for="vis-gpt-4-turbo" style="color: #10a37f;">GPT-4 Turbo</label>
+                            </div>
+
+                            <!-- Claude -->
+                            <div class="checkbox-item">
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="claude-3.5-haiku" id="vis-claude-35-haiku" checked>
+                                <label for="vis-claude-35-haiku" style="color: #d97706;">Claude 3.5 Haiku</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="claude-3.5-sonnet" id="vis-claude-35-sonnet" checked>
+                                <label for="vis-claude-35-sonnet" style="color: #d97706;">Claude 3.5 Sonnet</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="claude-3-opus" id="vis-claude-3-opus" checked>
+                                <label for="vis-claude-3-opus" style="color: #d97706;">Claude 3 Opus</label>
                             </div>
 
                             <!-- DeepSeek -->
                             <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="deepseek-v3.2" id="vis-deepseek-v32" checked>
-                                <label for="vis-deepseek-v32" style="color: #6366f1;">DeepSeek V3.2</label>
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="deepseek-chat" id="vis-deepseek-chat" checked>
+                                <label for="vis-deepseek-chat" style="color: #6366f1;">DeepSeek Chat</label>
                             </div>
                             <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="deepseek-v3.2-reasoner" id="vis-deepseek-v32-reasoner" checked>
-                                <label for="vis-deepseek-v32-reasoner" style="color: #6366f1;">DeepSeek V3.2 Reasoner</label>
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="deepseek-reasoner" id="vis-deepseek-reasoner" checked>
+                                <label for="vis-deepseek-reasoner" style="color: #6366f1;">DeepSeek Reasoner</label>
                             </div>
                         </div>
                     </div>
@@ -1407,23 +1475,23 @@ const Storage = {
             },
             visibleModels: {
                 // Gemini models
-                'gemini-2.5-flash-lite': true,
-                'gemini-3-flash': true,
-                'gemini-3-pro': true,
-                // OpenAI GPT-5 models
-                'gpt-5-nano': true,
-                'gpt-5-mini': true,
-                'gpt-5.2': true,
-                // Claude 4.5 models
-                'claude-haiku-4.5': true,
-                'claude-sonnet-4.5': true,
-                'claude-opus-4.5': true,
+                'gemini-2.0-flash': true,
+                'gemini-1.5-flash': true,
+                'gemini-1.5-pro': true,
+                // OpenAI GPT-4 models
+                'gpt-4o': true,
+                'gpt-4o-mini': true,
+                'gpt-4-turbo': true,
+                // Claude models
+                'claude-3.5-haiku': true,
+                'claude-3.5-sonnet': true,
+                'claude-3-opus': true,
                 // DeepSeek models
-                'deepseek-v3.2': true,
-                'deepseek-v3.2-reasoner': true
+                'deepseek-chat': true,
+                'deepseek-reasoner': true
             },
             visibleLocalModels: {}, // Track visibility of individual LM Studio models
-            currentModel: 'gemini-2.5-flash-lite',
+            currentModel: 'gemini-2.0-flash-exp',
             theme: 'system' // 'light', 'dark', 'system'
         };
 
@@ -1540,13 +1608,32 @@ const ThemeManager = {
 
 // === markdown.js ===
 // ==================== Markdown Module ====================
-// Simple markdown parser for chat messages
+// Simple markdown parser for chat messages with LaTeX support
 
 const MarkdownParser = {
     parse(text) {
         if (!text) return '';
 
-        let html = this.escapeHtml(text);
+        // Store LaTeX expressions to protect them from other parsing
+        const latexBlocks = [];
+        const latexInlines = [];
+
+        // Extract block LaTeX ($$...$$)
+        let html = text.replace(/\$\$([\s\S]*?)\$\$/g, (match, latex) => {
+            const id = `LATEX_BLOCK_${latexBlocks.length}`;
+            latexBlocks.push(latex.trim());
+            return id;
+        });
+
+        // Extract inline LaTeX ($...$) - but not $$
+        html = html.replace(/\$([^\$\n]+?)\$/g, (match, latex) => {
+            const id = `LATEX_INLINE_${latexInlines.length}`;
+            latexInlines.push(latex.trim());
+            return id;
+        });
+
+        // Now escape HTML
+        html = this.escapeHtml(html);
 
         // Code blocks (```language\ncode```)
         html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => {
@@ -1603,6 +1690,18 @@ const MarkdownParser = {
         html = html.replace(/(<\/ul>)<br>/g, '$1');
         html = html.replace(/(<\/blockquote>)<br>/g, '$1');
 
+        // Restore LaTeX block expressions
+        latexBlocks.forEach((latex, i) => {
+            const rendered = this.renderLatex(latex, true);
+            html = html.replace(`LATEX_BLOCK_${i}`, `<div class="latex-block">${rendered}</div>`);
+        });
+
+        // Restore LaTeX inline expressions
+        latexInlines.forEach((latex, i) => {
+            const rendered = this.renderLatex(latex, false);
+            html = html.replace(`LATEX_INLINE_${i}`, `<span class="latex-inline">${rendered}</span>`);
+        });
+
         return html;
     },
 
@@ -1610,6 +1709,26 @@ const MarkdownParser = {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    },
+
+    renderLatex(latex, displayMode) {
+        // Check if KaTeX is available
+        if (typeof katex !== 'undefined') {
+            try {
+                return katex.renderToString(latex, {
+                    displayMode: displayMode,
+                    throwOnError: false,
+                    output: 'html'
+                });
+            } catch (e) {
+                console.warn('KaTeX error:', e);
+                return `<span class="latex-error">${this.escapeHtml(latex)}</span>`;
+            }
+        }
+        // Fallback if KaTeX not loaded - just show the raw LaTeX
+        return displayMode
+            ? `<div class="latex-fallback">$$${this.escapeHtml(latex)}$$</div>`
+            : `<span class="latex-fallback">$${this.escapeHtml(latex)}$</span>`;
     },
 
     copyCode(codeId) {
@@ -1639,9 +1758,9 @@ const MarkdownParser = {
 
 const OpenAIClient = {
     MODELS: [
-        { id: 'gpt-5-nano', name: 'GPT-5 Nano', displayKey: 'gpt-5-nano', color: '#10a37f' },
-        { id: 'gpt-5-mini', name: 'GPT-5 Mini', displayKey: 'gpt-5-mini', color: '#10a37f' },
-        { id: 'gpt-5.2', name: 'GPT-5.2', displayKey: 'gpt-5.2', color: '#10a37f' }
+        { id: 'gpt-4o', name: 'GPT-4o', displayKey: 'gpt-4o', color: '#10a37f' },
+        { id: 'gpt-4o-mini', name: 'GPT-4o Mini', displayKey: 'gpt-4o-mini', color: '#10a37f' },
+        { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', displayKey: 'gpt-4-turbo', color: '#10a37f' }
     ],
 
     async chat(messages, model, apiKey, onChunk) {
@@ -1724,9 +1843,9 @@ const OpenAIClient = {
 
 const ClaudeClient = {
     MODELS: [
-        { id: 'claude-haiku-4-5-20241022', name: 'Claude Haiku 4.5', displayKey: 'claude-haiku-4.5', color: '#d97706' },
-        { id: 'claude-sonnet-4-5-20241022', name: 'Claude Sonnet 4.5', displayKey: 'claude-sonnet-4.5', color: '#d97706' },
-        { id: 'claude-opus-4-5-20241022', name: 'Claude Opus 4.5', displayKey: 'claude-opus-4.5', color: '#d97706' }
+        { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', displayKey: 'claude-3.5-haiku', color: '#d97706' },
+        { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', displayKey: 'claude-3.5-sonnet', color: '#d97706' },
+        { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus', displayKey: 'claude-3-opus', color: '#d97706' }
     ],
 
     async chat(messages, model, apiKey, onChunk, proxyUrl) {
@@ -1746,7 +1865,10 @@ const ClaudeClient = {
             if (msg.role === 'system') {
                 systemMessage = msg.content;
             } else {
-                chatMessages.push(msg);
+                chatMessages.push({
+                    role: msg.role,
+                    content: msg.content
+                });
             }
         }
 
@@ -1762,6 +1884,7 @@ const ClaudeClient = {
         }
 
         // Use CORS proxy for browser requests
+        // The proxy should forward to https://api.anthropic.com/v1/messages
         const response = await fetch(proxyUrl, {
             method: 'POST',
             headers: {
@@ -1774,7 +1897,7 @@ const ClaudeClient = {
 
         if (!response.ok) {
             const error = await response.json().catch(() => ({}));
-            throw new Error(error.error?.message || `Claude API error: ${response.status}`);
+            throw new Error(error.error?.message || `Claude API error: ${response.status} - model: ${model}`);
         }
 
         return this.streamResponse(response, onChunk);
@@ -1784,18 +1907,23 @@ const ClaudeClient = {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let fullContent = '';
+        let buffer = '';
 
         while (true) {
             const { done, value } = await reader.read();
             if (done) break;
 
-            const chunk = decoder.decode(value);
-            const lines = chunk.split('\n');
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
 
             for (const line of lines) {
                 if (line.startsWith('data: ')) {
+                    const data = line.slice(6).trim();
+                    if (data === '[DONE]') continue;
+
                     try {
-                        const json = JSON.parse(line.slice(6));
+                        const json = JSON.parse(data);
                         if (json.type === 'content_block_delta') {
                             const content = json.delta?.text;
                             if (content) {
@@ -1825,9 +1953,9 @@ const ClaudeClient = {
 
 const GeminiClient = {
     MODELS: [
-        { id: 'gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash Lite', displayKey: 'gemini-2.5-flash-lite', color: '#4285f4' },
-        { id: 'gemini-3-flash', name: 'Gemini 3 Flash', displayKey: 'gemini-3-flash', color: '#4285f4' },
-        { id: 'gemini-3-pro', name: 'Gemini 3 Pro', displayKey: 'gemini-3-pro', color: '#4285f4' }
+        { id: 'gemini-2.0-flash-exp', name: 'Gemini 2.0 Flash', displayKey: 'gemini-2.0-flash', color: '#4285f4' },
+        { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', displayKey: 'gemini-1.5-flash', color: '#4285f4' },
+        { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', displayKey: 'gemini-1.5-pro', color: '#4285f4' }
     ],
 
     async chat(messages, model, apiKey, onChunk) {
@@ -1850,9 +1978,16 @@ const GeminiClient = {
             }
         }
 
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?key=${apiKey}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${apiKey}`;
 
-        const body = { contents };
+        const body = {
+            contents,
+            generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 8192
+            }
+        };
+
         if (systemInstruction) {
             body.systemInstruction = { parts: [{ text: systemInstruction }] };
         }
@@ -1884,41 +2019,36 @@ const GeminiClient = {
             if (done) break;
 
             buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
 
-            // Gemini returns JSON array chunks
-            try {
-                const jsonMatch = buffer.match(/\[[\s\S]*\]/);
-                if (jsonMatch) {
-                    const data = JSON.parse(jsonMatch[0]);
-                    for (const item of data) {
-                        const text = item.candidates?.[0]?.content?.parts?.[0]?.text;
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    try {
+                        const data = JSON.parse(line.slice(6));
+                        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
                         if (text) {
                             fullContent += text;
                             if (onChunk) onChunk(text);
                         }
+                    } catch (e) {
+                        // Skip invalid JSON
                     }
-                    buffer = buffer.slice(jsonMatch.index + jsonMatch[0].length);
                 }
-            } catch (e) {
-                // Keep buffering
             }
         }
 
-        // Handle any remaining content
-        if (buffer.trim()) {
+        // Process remaining buffer
+        if (buffer.startsWith('data: ')) {
             try {
-                const data = JSON.parse(buffer);
-                if (Array.isArray(data)) {
-                    for (const item of data) {
-                        const text = item.candidates?.[0]?.content?.parts?.[0]?.text;
-                        if (text && !fullContent.includes(text)) {
-                            fullContent += text;
-                            if (onChunk) onChunk(text);
-                        }
-                    }
+                const data = JSON.parse(buffer.slice(6));
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (text) {
+                    fullContent += text;
+                    if (onChunk) onChunk(text);
                 }
             } catch (e) {
-                // Ignore parse errors
+                // Ignore
             }
         }
 
@@ -1942,8 +2072,8 @@ const GeminiClient = {
 
 const DeepSeekClient = {
     MODELS: [
-        { id: 'deepseek-chat', name: 'DeepSeek V3.2', displayKey: 'deepseek-v3.2', color: '#6366f1' },
-        { id: 'deepseek-reasoner', name: 'DeepSeek V3.2 Reasoner', displayKey: 'deepseek-v3.2-reasoner', color: '#6366f1' }
+        { id: 'deepseek-chat', name: 'DeepSeek Chat', displayKey: 'deepseek-chat', color: '#6366f1' },
+        { id: 'deepseek-reasoner', name: 'DeepSeek Reasoner', displayKey: 'deepseek-reasoner', color: '#6366f1' }
     ],
 
     async chat(messages, model, apiKey, onChunk) {
@@ -2182,6 +2312,15 @@ const ChatHistory = {
         return this.chats[id].messages;
     },
 
+    setMessages(messages, chatId = null) {
+        const id = chatId || this.currentChatId;
+        if (!id || !this.chats[id]) return false;
+        this.chats[id].messages = messages;
+        this.chats[id].updatedAt = new Date().toISOString();
+        this.save();
+        return true;
+    },
+
     getChatList() {
         return Object.values(this.chats)
             .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
@@ -2388,6 +2527,7 @@ const ChatUI = {
     chatArea: null,
     isGenerating: false,
     currentStreamingElement: null,
+    currentStreamingMsgDiv: null,
 
     init() {
         this.messagesContainer = document.getElementById('messages-container');
@@ -2446,7 +2586,7 @@ const ChatUI = {
             }
         });
 
-        // OpenAI GPT-5 models
+        // OpenAI GPT models
         OpenAIClient.MODELS.forEach(model => {
             if (settings.visibleModels[model.displayKey] !== false) {
                 const option = document.createElement('option');
@@ -2524,13 +2664,13 @@ const ChatUI = {
 
     loadMessages(messages) {
         this.messagesContainer.innerHTML = '';
-        messages.forEach(msg => {
-            this.addMessage(msg.role, msg.content, msg.model, false);
+        messages.forEach((msg, index) => {
+            this.addMessage(msg.role, msg.content, msg.model, false, index);
         });
         this.scrollToBottom();
     },
 
-    addMessage(role, content, model = null, scroll = true) {
+    addMessage(role, content, model = null, scroll = true, messageIndex = null) {
         const msgDiv = document.createElement('div');
         msgDiv.className = `message ${role}-message`;
 
@@ -2558,8 +2698,23 @@ const ChatUI = {
             contentDiv.className = 'message-content';
             contentDiv.innerHTML = MarkdownParser.parse(content);
 
+            // Action buttons for assistant messages
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'message-actions';
+
+            const idx = messageIndex !== null ? messageIndex : this.getNextAssistantIndex();
+            actionsDiv.innerHTML = `
+                <button class="message-action-btn" onclick="ChatUI.copyMessage(this)" data-content="${this.escapeAttr(content)}">
+                    <span>📋</span> Copy
+                </button>
+                <button class="message-action-btn" onclick="ChatUI.regenerateMessage(${idx})">
+                    <span>🔄</span> Regenerate
+                </button>
+            `;
+
             msgDiv.appendChild(headerDiv);
             msgDiv.appendChild(contentDiv);
+            msgDiv.appendChild(actionsDiv);
         }
 
         this.messagesContainer.appendChild(msgDiv);
@@ -2567,6 +2722,125 @@ const ChatUI = {
         if (scroll) {
             this.scrollToBottom();
         }
+    },
+
+    escapeAttr(str) {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    },
+
+    getNextAssistantIndex() {
+        const messages = ChatHistory.getMessages();
+        return messages.length;
+    },
+
+    copyMessage(button) {
+        const content = button.dataset.content;
+        navigator.clipboard.writeText(content).then(() => {
+            button.classList.add('copied');
+            button.innerHTML = '<span>✓</span> Copied!';
+            setTimeout(() => {
+                button.classList.remove('copied');
+                button.innerHTML = '<span>📋</span> Copy';
+            }, 2000);
+        }).catch(err => {
+            console.error('Failed to copy:', err);
+        });
+    },
+
+    async regenerateMessage(messageIndex) {
+        if (this.isGenerating) return;
+
+        const messages = ChatHistory.getMessages();
+
+        // Find the assistant message at this index and remove it and all after
+        // The messageIndex should be the index of the assistant message
+        if (messageIndex < 0 || messageIndex >= messages.length) return;
+
+        // Get messages up to the assistant message (exclude the assistant message)
+        const messagesUpTo = messages.slice(0, messageIndex);
+
+        // Update chat history - remove messages from messageIndex onwards
+        ChatHistory.setMessages(messagesUpTo);
+
+        // Reload the UI
+        this.loadMessages(messagesUpTo);
+
+        // Get the last user message to regenerate
+        const lastUserMsg = messagesUpTo.filter(m => m.role === 'user').pop();
+        if (!lastUserMsg) return;
+
+        // Get selected model
+        const selector = document.getElementById('model-selector');
+        const [provider, modelId] = selector.value.split(':');
+        const modelName = selector.options[selector.selectedIndex].text;
+
+        // Disable input
+        this.setGenerating(true);
+
+        try {
+            // Start streaming display
+            this.startStreaming();
+
+            // Prepare messages for API
+            const apiMessages = messagesUpTo.map(m => ({
+                role: m.role,
+                content: m.content
+            }));
+
+            // Get settings
+            const settings = Storage.getSettings();
+            let fullResponse = '';
+
+            // Call appropriate API
+            const onChunk = (chunk) => {
+                this.appendToStream(chunk);
+            };
+
+            switch (provider) {
+                case 'openai':
+                    fullResponse = await OpenAIClient.chat(apiMessages, modelId, settings.apiKeys.openai, onChunk);
+                    break;
+                case 'anthropic':
+                    fullResponse = await ClaudeClient.chat(
+                        apiMessages,
+                        modelId,
+                        settings.apiKeys.anthropic,
+                        onChunk,
+                        settings.apiKeys.anthropicProxy
+                    );
+                    break;
+                case 'gemini':
+                    fullResponse = await GeminiClient.chat(apiMessages, modelId, settings.apiKeys.gemini, onChunk);
+                    break;
+                case 'deepseek':
+                    fullResponse = await DeepSeekClient.chat(apiMessages, modelId, settings.apiKeys.deepseek, onChunk);
+                    break;
+                case 'lmstudio':
+                    fullResponse = await LMStudioClient.chat(apiMessages, modelId, settings.lmstudio?.url, onChunk);
+                    break;
+            }
+
+            // Finish streaming display
+            this.finishStreaming();
+
+            // Save assistant message
+            ChatHistory.addMessage('assistant', fullResponse, modelName);
+            Sidebar.refresh();
+
+        } catch (error) {
+            console.error('Regenerate error:', error);
+            this.finishStreaming();
+            this.addMessage('assistant', `Error: ${error.message}`);
+            ChatHistory.addMessage('assistant', `Error: ${error.message}`);
+        }
+
+        this.setGenerating(false);
+        this.focusInput();
     },
 
     startStreaming() {
@@ -2592,6 +2866,7 @@ const ChatUI = {
         this.messagesContainer.appendChild(msgDiv);
 
         this.currentStreamingElement = contentDiv;
+        this.currentStreamingMsgDiv = msgDiv;
         this.scrollToBottom();
 
         return contentDiv;
@@ -2611,7 +2886,26 @@ const ChatUI = {
             const rawText = this.currentStreamingElement.dataset.rawText || '';
             this.currentStreamingElement.innerHTML = MarkdownParser.parse(rawText);
             this.currentStreamingElement.parentElement.classList.remove('streaming');
+
+            // Add action buttons
+            const msgDiv = this.currentStreamingMsgDiv;
+            if (msgDiv) {
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'message-actions';
+                const idx = ChatHistory.getMessages().length; // Will be added after this
+                actionsDiv.innerHTML = `
+                    <button class="message-action-btn" onclick="ChatUI.copyMessage(this)" data-content="${this.escapeAttr(rawText)}">
+                        <span>📋</span> Copy
+                    </button>
+                    <button class="message-action-btn" onclick="ChatUI.regenerateMessage(${idx})">
+                        <span>🔄</span> Regenerate
+                    </button>
+                `;
+                msgDiv.appendChild(actionsDiv);
+            }
+
             this.currentStreamingElement = null;
+            this.currentStreamingMsgDiv = null;
         }
     },
 

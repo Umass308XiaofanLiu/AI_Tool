@@ -2,9 +2,9 @@
 
 const OpenAIClient = {
     MODELS: [
-        { id: 'gpt-5-nano', name: 'GPT-5 Nano', displayKey: 'gpt-5-nano', color: '#10a37f' },
-        { id: 'gpt-5-mini', name: 'GPT-5 Mini', displayKey: 'gpt-5-mini', color: '#10a37f' },
-        { id: 'gpt-5.2', name: 'GPT-5.2', displayKey: 'gpt-5.2', color: '#10a37f' }
+        { id: 'gpt-4o', name: 'GPT-4o', displayKey: 'gpt-4o', color: '#10a37f' },
+        { id: 'gpt-4o-mini', name: 'GPT-4o Mini', displayKey: 'gpt-4o-mini', color: '#10a37f' },
+        { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', displayKey: 'gpt-4-turbo', color: '#10a37f' }
     ],
 
     async chat(messages, model, apiKey, onChunk) {

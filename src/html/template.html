@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Chat Client</title>
+    <!-- KaTeX for LaTeX rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <style>
         /* {{CSS_PLACEHOLDER}} */
     </style>
@@ -193,54 +196,54 @@
                         <div class="models-grid">
                             <!-- Gemini -->
                             <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="gemini-2.5-flash-lite" id="vis-gemini-25-flash-lite" checked>
-                                <label for="vis-gemini-25-flash-lite" style="color: #4285f4;">Gemini 2.5 Flash Lite</label>
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="gemini-2.0-flash" id="vis-gemini-20-flash" checked>
+                                <label for="vis-gemini-20-flash" style="color: #4285f4;">Gemini 2.0 Flash</label>
                             </div>
                             <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="gemini-3-flash" id="vis-gemini-3-flash" checked>
-                                <label for="vis-gemini-3-flash" style="color: #4285f4;">Gemini 3 Flash</label>
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="gemini-1.5-flash" id="vis-gemini-15-flash" checked>
+                                <label for="vis-gemini-15-flash" style="color: #4285f4;">Gemini 1.5 Flash</label>
                             </div>
                             <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="gemini-3-pro" id="vis-gemini-3-pro" checked>
-                                <label for="vis-gemini-3-pro" style="color: #4285f4;">Gemini 3 Pro</label>
-                            </div>
-
-                            <!-- GPT-5 -->
-                            <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="gpt-5-nano" id="vis-gpt-5-nano" checked>
-                                <label for="vis-gpt-5-nano" style="color: #10a37f;">GPT-5 Nano</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="gpt-5-mini" id="vis-gpt-5-mini" checked>
-                                <label for="vis-gpt-5-mini" style="color: #10a37f;">GPT-5 Mini</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="gpt-5.2" id="vis-gpt-52" checked>
-                                <label for="vis-gpt-52" style="color: #10a37f;">GPT-5.2</label>
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="gemini-1.5-pro" id="vis-gemini-15-pro" checked>
+                                <label for="vis-gemini-15-pro" style="color: #4285f4;">Gemini 1.5 Pro</label>
                             </div>
 
-                            <!-- Claude 4.5 -->
+                            <!-- GPT-4 -->
                             <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="claude-haiku-4.5" id="vis-claude-haiku-45" checked>
-                                <label for="vis-claude-haiku-45" style="color: #d97706;">Claude Haiku 4.5</label>
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="gpt-4o" id="vis-gpt-4o" checked>
+                                <label for="vis-gpt-4o" style="color: #10a37f;">GPT-4o</label>
                             </div>
                             <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="claude-sonnet-4.5" id="vis-claude-sonnet-45" checked>
-                                <label for="vis-claude-sonnet-45" style="color: #d97706;">Claude Sonnet 4.5</label>
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="gpt-4o-mini" id="vis-gpt-4o-mini" checked>
+                                <label for="vis-gpt-4o-mini" style="color: #10a37f;">GPT-4o Mini</label>
                             </div>
                             <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="claude-opus-4.5" id="vis-claude-opus-45" checked>
-                                <label for="vis-claude-opus-45" style="color: #d97706;">Claude Opus 4.5</label>
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="gpt-4-turbo" id="vis-gpt-4-turbo" checked>
+                                <label for="vis-gpt-4-turbo" style="color: #10a37f;">GPT-4 Turbo</label>
+                            </div>
+
+                            <!-- Claude -->
+                            <div class="checkbox-item">
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="claude-3.5-haiku" id="vis-claude-35-haiku" checked>
+                                <label for="vis-claude-35-haiku" style="color: #d97706;">Claude 3.5 Haiku</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="claude-3.5-sonnet" id="vis-claude-35-sonnet" checked>
+                                <label for="vis-claude-35-sonnet" style="color: #d97706;">Claude 3.5 Sonnet</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="claude-3-opus" id="vis-claude-3-opus" checked>
+                                <label for="vis-claude-3-opus" style="color: #d97706;">Claude 3 Opus</label>
                             </div>
 
                             <!-- DeepSeek -->
                             <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="deepseek-v3.2" id="vis-deepseek-v32" checked>
-                                <label for="vis-deepseek-v32" style="color: #6366f1;">DeepSeek V3.2</label>
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="deepseek-chat" id="vis-deepseek-chat" checked>
+                                <label for="vis-deepseek-chat" style="color: #6366f1;">DeepSeek Chat</label>
                             </div>
                             <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="deepseek-v3.2-reasoner" id="vis-deepseek-v32-reasoner" checked>
-                                <label for="vis-deepseek-v32-reasoner" style="color: #6366f1;">DeepSeek V3.2 Reasoner</label>
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="deepseek-reasoner" id="vis-deepseek-reasoner" checked>
+                                <label for="vis-deepseek-reasoner" style="color: #6366f1;">DeepSeek Reasoner</label>
                             </div>
                         </div>
                     </div>

@@ -2,9 +2,9 @@
 
 const ClaudeClient = {
     MODELS: [
-        { id: 'claude-haiku-4-5-20241022', name: 'Claude Haiku 4.5', displayKey: 'claude-haiku-4.5', color: '#d97706' },
-        { id: 'claude-sonnet-4-5-20241022', name: 'Claude Sonnet 4.5', displayKey: 'claude-sonnet-4.5', color: '#d97706' },
-        { id: 'claude-opus-4-5-20241022', name: 'Claude Opus 4.5', displayKey: 'claude-opus-4.5', color: '#d97706' }
+        { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', displayKey: 'claude-3.5-haiku', color: '#d97706' },
+        { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', displayKey: 'claude-3.5-sonnet', color: '#d97706' },
+        { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus', displayKey: 'claude-3-opus', color: '#d97706' }
     ],
 
     async chat(messages, model, apiKey, onChunk, proxyUrl) {
@@ -24,7 +24,10 @@ const ClaudeClient = {
             if (msg.role === 'system') {
                 systemMessage = msg.content;
             } else {
-                chatMessages.push(msg);
+                chatMessages.push({
+                    role: msg.role,
+                    content: msg.content
+                });
             }
         }
 
@@ -40,6 +43,7 @@ const ClaudeClient = {
         }
 
         // Use CORS proxy for browser requests
+        // The proxy should forward to https://api.anthropic.com/v1/messages
         const response = await fetch(proxyUrl, {
             method: 'POST',
             headers: {
@@ -52,7 +56,7 @@ const ClaudeClient = {
 
         if (!response.ok) {
             const error = await response.json().catch(() => ({}));
-            throw new Error(error.error?.message || `Claude API error: ${response.status}`);
+            throw new Error(error.error?.message || `Claude API error: ${response.status} - model: ${model}`);
         }
 
         return this.streamResponse(response, onChunk);
@@ -62,18 +66,23 @@ const ClaudeClient = {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let fullContent = '';
+        let buffer = '';
 
         while (true) {
             const { done, value } = await reader.read();
             if (done) break;
 
-            const chunk = decoder.decode(value);
-            const lines = chunk.split('\n');
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
 
             for (const line of lines) {
                 if (line.startsWith('data: ')) {
+                    const data = line.slice(6).trim();
+                    if (data === '[DONE]') continue;
+
                     try {
-                        const json = JSON.parse(line.slice(6));
+                        const json = JSON.parse(data);
                         if (json.type === 'content_block_delta') {
                             const content = json.delta?.text;
                             if (content) {

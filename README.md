@@ -5,10 +5,10 @@
 ## 功能特点
 
 - **多模型支持**
-  - Google Gemini (2.5 Flash Lite, 3 Flash, 3 Pro)
-  - OpenAI GPT-5 (Nano, Mini, 5.2)
-  - Anthropic Claude (Haiku 4.5, Sonnet 4.5, Opus 4.5)
-  - DeepSeek (V3.2, V3.2 Reasoner)
+  - Google Gemini (2.0 Flash, 1.5 Flash, 1.5 Pro)
+  - OpenAI GPT-4 (4o, 4o Mini, 4 Turbo)
+  - Anthropic Claude (3.5 Haiku, 3.5 Sonnet, 3 Opus)
+  - DeepSeek (Chat, Reasoner)
   - LM Studio 本地模型
 
 - **现代化界面**
@@ -16,6 +16,8 @@
   - 用户消息右对齐气泡
   - AI 回复居中显示
   - 代码块带语言标签和复制按钮
+  - **LaTeX 数学公式渲染** (使用 KaTeX)
+  - **复制和重新生成按钮**
 
 - **主题切换**
   - 浅色模式

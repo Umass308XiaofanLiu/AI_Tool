@@ -56,6 +56,15 @@ const ChatHistory = {
         return this.chats[id].messages;
     },
 
+    setMessages(messages, chatId = null) {
+        const id = chatId || this.currentChatId;
+        if (!id || !this.chats[id]) return false;
+        this.chats[id].messages = messages;
+        this.chats[id].updatedAt = new Date().toISOString();
+        this.save();
+        return true;
+    },
+
     getChatList() {
         return Object.values(this.chats)
             .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))

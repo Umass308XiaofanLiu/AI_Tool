@@ -24,23 +24,23 @@ const Storage = {
             },
             visibleModels: {
                 // Gemini models
-                'gemini-2.5-flash-lite': true,
-                'gemini-3-flash': true,
-                'gemini-3-pro': true,
-                // OpenAI GPT-5 models
-                'gpt-5-nano': true,
-                'gpt-5-mini': true,
-                'gpt-5.2': true,
-                // Claude 4.5 models
-                'claude-haiku-4.5': true,
-                'claude-sonnet-4.5': true,
-                'claude-opus-4.5': true,
+                'gemini-2.0-flash': true,
+                'gemini-1.5-flash': true,
+                'gemini-1.5-pro': true,
+                // OpenAI GPT-4 models
+                'gpt-4o': true,
+                'gpt-4o-mini': true,
+                'gpt-4-turbo': true,
+                // Claude models
+                'claude-3.5-haiku': true,
+                'claude-3.5-sonnet': true,
+                'claude-3-opus': true,
                 // DeepSeek models
-                'deepseek-v3.2': true,
-                'deepseek-v3.2-reasoner': true
+                'deepseek-chat': true,
+                'deepseek-reasoner': true
             },
             visibleLocalModels: {}, // Track visibility of individual LM Studio models
-            currentModel: 'gemini-2.5-flash-lite',
+            currentModel: 'gemini-2.0-flash-exp',
             theme: 'system' // 'light', 'dark', 'system'
         };
 

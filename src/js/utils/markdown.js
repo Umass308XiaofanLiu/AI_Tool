@@ -1,11 +1,30 @@
 // ==================== Markdown Module ====================
-// Simple markdown parser for chat messages
+// Simple markdown parser for chat messages with LaTeX support
 
 const MarkdownParser = {
     parse(text) {
         if (!text) return '';
 
-        let html = this.escapeHtml(text);
+        // Store LaTeX expressions to protect them from other parsing
+        const latexBlocks = [];
+        const latexInlines = [];
+
+        // Extract block LaTeX ($$...$$)
+        let html = text.replace(/\$\$([\s\S]*?)\$\$/g, (match, latex) => {
+            const id = `LATEX_BLOCK_${latexBlocks.length}`;
+            latexBlocks.push(latex.trim());
+            return id;
+        });
+
+        // Extract inline LaTeX ($...$) - but not $$
+        html = html.replace(/\$([^\$\n]+?)\$/g, (match, latex) => {
+            const id = `LATEX_INLINE_${latexInlines.length}`;
+            latexInlines.push(latex.trim());
+            return id;
+        });
+
+        // Now escape HTML
+        html = this.escapeHtml(html);
 
         // Code blocks (```language\ncode```)
         html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => {
@@ -62,6 +81,18 @@ const MarkdownParser = {
         html = html.replace(/(<\/ul>)<br>/g, '$1');
         html = html.replace(/(<\/blockquote>)<br>/g, '$1');
 
+        // Restore LaTeX block expressions
+        latexBlocks.forEach((latex, i) => {
+            const rendered = this.renderLatex(latex, true);
+            html = html.replace(`LATEX_BLOCK_${i}`, `<div class="latex-block">${rendered}</div>`);
+        });
+
+        // Restore LaTeX inline expressions
+        latexInlines.forEach((latex, i) => {
+            const rendered = this.renderLatex(latex, false);
+            html = html.replace(`LATEX_INLINE_${i}`, `<span class="latex-inline">${rendered}</span>`);
+        });
+
         return html;
     },
 
@@ -69,6 +100,26 @@ const MarkdownParser = {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    },
+
+    renderLatex(latex, displayMode) {
+        // Check if KaTeX is available
+        if (typeof katex !== 'undefined') {
+            try {
+                return katex.renderToString(latex, {
+                    displayMode: displayMode,
+                    throwOnError: false,
+                    output: 'html'
+                });
+            } catch (e) {
+                console.warn('KaTeX error:', e);
+                return `<span class="latex-error">${this.escapeHtml(latex)}</span>`;
+            }
+        }
+        // Fallback if KaTeX not loaded - just show the raw LaTeX
+        return displayMode
+            ? `<div class="latex-fallback">$$${this.escapeHtml(latex)}$$</div>`
+            : `<span class="latex-fallback">$${this.escapeHtml(latex)}$</span>`;
     },
 
     copyCode(codeId) {
