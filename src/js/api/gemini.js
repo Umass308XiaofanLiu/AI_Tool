@@ -3,8 +3,8 @@
 const GeminiClient = {
     MODELS: [
         { id: 'gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash Lite', displayKey: 'gemini-2.5-flash-lite', color: '#4285f4' },
-        { id: 'gemini-3-flash', name: 'Gemini 3 Flash', displayKey: 'gemini-3-flash', color: '#4285f4' },
-        { id: 'gemini-3-pro', name: 'Gemini 3 Pro', displayKey: 'gemini-3-pro', color: '#4285f4' }
+        { id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash', displayKey: 'gemini-3-flash-preview', color: '#4285f4' },
+        { id: 'gemini-3-pro-preview', name: 'Gemini 3 Pro', displayKey: 'gemini-3-pro-preview', color: '#4285f4' }
     ],
 
     async chat(messages, model, apiKey, onChunk) {

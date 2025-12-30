@@ -25,19 +25,19 @@ const Storage = {
             visibleModels: {
                 // Gemini models
                 'gemini-2.5-flash-lite': true,
-                'gemini-3-flash': true,
-                'gemini-3-pro': true,
+                'gemini-3-flash-preview': true,
+                'gemini-3-pro-preview': true,
                 // OpenAI GPT-5 models
                 'gpt-5-nano': true,
                 'gpt-5-mini': true,
                 'gpt-5.2': true,
                 // Claude 4.5 models
-                'claude-haiku-4.5': true,
-                'claude-sonnet-4.5': true,
-                'claude-opus-4.5': true,
+                'claude-haiku-4-5-20251001': true,
+                'claude-sonnet-4-5-20250929': true,
+                'claude-opus-4-5-20251101': true,
                 // DeepSeek models
-                'deepseek-v3.2': true,
-                'deepseek-v3.2-reasoner': true
+                'deepseek-chat': true,
+                'deepseek-reasoner': true
             },
             visibleLocalModels: {}, // Track visibility of individual LM Studio models
             currentModel: 'gemini-2.5-flash-lite',
