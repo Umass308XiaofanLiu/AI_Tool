@@ -18,11 +18,37 @@ const GeminiClient = {
 
         for (const msg of messages) {
             if (msg.role === 'system') {
-                systemInstruction = msg.content;
+                systemInstruction = typeof msg.content === 'string' ? msg.content : '';
             } else {
+                const parts = [];
+
+                // Handle multimodal content (array format with images)
+                if (Array.isArray(msg.content)) {
+                    for (const item of msg.content) {
+                        if (item.type === 'text') {
+                            parts.push({ text: item.text });
+                        } else if (item.type === 'image_url' && item.image_url?.url) {
+                            // Extract base64 data from data URL
+                            const dataUrl = item.image_url.url;
+                            const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+                            if (match) {
+                                parts.push({
+                                    inlineData: {
+                                        mimeType: match[1],
+                                        data: match[2]
+                                    }
+                                });
+                            }
+                        }
+                    }
+                } else {
+                    // Simple text content
+                    parts.push({ text: msg.content });
+                }
+
                 contents.push({
                     role: msg.role === 'assistant' ? 'model' : 'user',
-                    parts: [{ text: msg.content }]
+                    parts: parts
                 });
             }
         }

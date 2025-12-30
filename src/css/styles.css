@@ -749,6 +749,267 @@ body {
     height: 18px;
 }
 
+/* Attach Button */
+#attach-btn {
+    width: 40px;
+    height: 40px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+#attach-btn:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+#attach-btn:active {
+    transform: scale(0.95);
+}
+
+#attach-btn .icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* File Preview Container */
+.file-preview-container {
+    max-width: 800px;
+    margin: 0 auto 12px;
+    display: none;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 8px;
+}
+
+.file-preview-container.has-files {
+    display: flex;
+}
+
+.file-preview-item {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--separator);
+}
+
+.file-preview-item.image-preview {
+    width: 80px;
+    height: 80px;
+}
+
+.file-preview-item.image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.file-preview-item.file-preview {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    max-width: 200px;
+}
+
+.file-preview-item .file-icon {
+    width: 24px;
+    height: 24px;
+    color: var(--accent-color);
+    flex-shrink: 0;
+}
+
+.file-preview-item .file-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.file-preview-item .file-name {
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-preview-item .file-size {
+    font-size: 11px;
+    color: var(--text-tertiary);
+}
+
+.file-preview-item .remove-file-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 20px;
+    height: 20px;
+    background-color: rgba(0, 0, 0, 0.6);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.file-preview-item .remove-file-btn:hover {
+    background-color: var(--error-color);
+}
+
+.file-preview-item .remove-file-btn .icon {
+    width: 12px;
+    height: 12px;
+}
+
+/* Message with attachments */
+.message-attachments {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.message-attachment {
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--separator);
+}
+
+.message-attachment.image-attachment {
+    max-width: 300px;
+    max-height: 300px;
+}
+
+.message-attachment.image-attachment img {
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    display: block;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+.message-attachment.image-attachment img:hover {
+    opacity: 0.9;
+}
+
+.message-attachment.file-attachment {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+}
+
+.message-attachment .file-icon {
+    width: 24px;
+    height: 24px;
+    color: var(--accent-color);
+}
+
+.message-attachment .file-name {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Image Modal */
+.image-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    cursor: zoom-out;
+}
+
+.image-modal.visible {
+    display: flex;
+}
+
+.image-modal img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.image-modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease;
+}
+
+.image-modal-close:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.image-modal-close .icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* Drag and drop overlay */
+.drop-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(10, 132, 255, 0.1);
+    border: 3px dashed var(--accent-color);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1500;
+    pointer-events: none;
+}
+
+.drop-overlay.visible {
+    display: flex;
+}
+
+.drop-overlay-content {
+    text-align: center;
+    color: var(--accent-color);
+}
+
+.drop-overlay-content .icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+}
+
+.drop-overlay-content p {
+    font-size: 18px;
+    font-weight: 600;
+}
+
 /* ==================== Settings Dialog ==================== */
 .settings-overlay {
     position: fixed;

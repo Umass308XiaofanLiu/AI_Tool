@@ -22,12 +22,43 @@ const ClaudeClient = {
 
         for (const msg of messages) {
             if (msg.role === 'system') {
-                systemMessage = msg.content;
+                systemMessage = typeof msg.content === 'string' ? msg.content : '';
             } else {
-                chatMessages.push({
-                    role: msg.role,
-                    content: msg.content
-                });
+                // Handle multimodal content (array format with images)
+                if (Array.isArray(msg.content)) {
+                    const content = [];
+                    for (const item of msg.content) {
+                        if (item.type === 'text') {
+                            content.push({
+                                type: 'text',
+                                text: item.text
+                            });
+                        } else if (item.type === 'image_url' && item.image_url?.url) {
+                            // Extract base64 data from data URL
+                            const dataUrl = item.image_url.url;
+                            const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+                            if (match) {
+                                content.push({
+                                    type: 'image',
+                                    source: {
+                                        type: 'base64',
+                                        media_type: match[1],
+                                        data: match[2]
+                                    }
+                                });
+                            }
+                        }
+                    }
+                    chatMessages.push({
+                        role: msg.role,
+                        content: content
+                    });
+                } else {
+                    chatMessages.push({
+                        role: msg.role,
+                        content: msg.content
+                    });
+                }
             }
         }
 

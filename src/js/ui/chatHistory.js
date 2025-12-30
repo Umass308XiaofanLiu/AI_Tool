@@ -23,7 +23,7 @@ const ChatHistory = {
         return chatId;
     },
 
-    addMessage(role, content, model = null) {
+    addMessage(role, content, model = null, attachments = null) {
         if (!this.currentChatId) {
             this.createNewChat();
         }
@@ -38,12 +38,18 @@ const ChatHistory = {
             message.model = model;
         }
 
+        if (attachments && attachments.length > 0) {
+            message.attachments = attachments;
+        }
+
         this.chats[this.currentChatId].messages.push(message);
         this.chats[this.currentChatId].updatedAt = new Date().toISOString();
 
         // Update title if first user message
         if (role === 'user' && this.chats[this.currentChatId].messages.length === 1) {
-            const title = content.length > 40 ? content.substring(0, 40) + '...' : content;
+            // Use content or "Image" if only images attached
+            let title = content || (attachments?.length ? 'Image attachment' : 'New Chat');
+            title = title.length > 40 ? title.substring(0, 40) + '...' : title;
             this.chats[this.currentChatId].title = title;
         }
 
