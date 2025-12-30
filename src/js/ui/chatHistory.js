@@ -120,6 +120,68 @@ const ChatHistory = {
         return null;
     },
 
+    // Update message at specific index with response history support
+    updateMessageWithHistory(messageIndex, newContent, newModel) {
+        if (!this.currentChatId || !this.chats[this.currentChatId]) return false;
+
+        const messages = this.chats[this.currentChatId].messages;
+        if (messageIndex < 0 || messageIndex >= messages.length) return false;
+
+        const message = messages[messageIndex];
+
+        // Initialize history if not exists
+        if (!message.responseHistory) {
+            message.responseHistory = [{
+                content: message.content,
+                model: message.model,
+                timestamp: message.timestamp
+            }];
+            message.currentHistoryIndex = 0;
+        }
+
+        // Add new response to history
+        message.responseHistory.push({
+            content: newContent,
+            model: newModel,
+            timestamp: new Date().toISOString()
+        });
+
+        // Update current display to new response
+        message.currentHistoryIndex = message.responseHistory.length - 1;
+        message.content = newContent;
+        message.model = newModel;
+        message.timestamp = new Date().toISOString();
+
+        this.chats[this.currentChatId].updatedAt = new Date().toISOString();
+        this.save();
+        return true;
+    },
+
+    // Navigate response history
+    navigateHistory(messageIndex, direction) {
+        if (!this.currentChatId || !this.chats[this.currentChatId]) return null;
+
+        const messages = this.chats[this.currentChatId].messages;
+        if (messageIndex < 0 || messageIndex >= messages.length) return null;
+
+        const message = messages[messageIndex];
+        if (!message.responseHistory || message.responseHistory.length <= 1) return null;
+
+        let newIndex = message.currentHistoryIndex + direction;
+        if (newIndex < 0) newIndex = 0;
+        if (newIndex >= message.responseHistory.length) newIndex = message.responseHistory.length - 1;
+
+        if (newIndex !== message.currentHistoryIndex) {
+            message.currentHistoryIndex = newIndex;
+            const historyItem = message.responseHistory[newIndex];
+            message.content = historyItem.content;
+            message.model = historyItem.model;
+            this.save();
+            return historyItem;
+        }
+        return null;
+    },
+
     save() {
         Storage.saveChats(this.chats);
         Storage.setCurrentChatId(this.currentChatId);

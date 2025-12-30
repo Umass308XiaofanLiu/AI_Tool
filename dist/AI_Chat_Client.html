@@ -37,7 +37,7 @@
     --error-color: #ff453a;
     --warning-color: #ff9f0a;
     --success-color: #30d158;
-    --user-bubble-bg: #0a84ff;
+    --user-bubble-bg: #3a3a3c;
     --user-bubble-text: #ffffff;
     --code-bg: #1c1c1e;
     --code-header-bg: #2c2c2e;
@@ -64,8 +64,8 @@
     --error-color: #ff3b30;
     --warning-color: #ff9500;
     --success-color: #34c759;
-    --user-bubble-bg: #007aff;
-    --user-bubble-text: #ffffff;
+    --user-bubble-bg: #e5e5ea;
+    --user-bubble-text: #1c1c1e;
     --code-bg: #f2f2f7;
     --code-header-bg: #e5e5ea;
     --inline-code-bg: rgba(0, 0, 0, 0.05);
@@ -758,6 +758,87 @@ body {
 #send-btn .icon {
     width: 18px;
     height: 18px;
+}
+
+/* Send button generating state */
+#send-btn.generating {
+    background-color: transparent;
+    position: relative;
+    cursor: pointer;
+}
+
+#send-btn.generating::before {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border: 2px solid transparent;
+    border-top-color: var(--accent-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+#send-btn.generating .icon {
+    width: 14px;
+    height: 14px;
+    color: var(--text-primary);
+}
+
+#send-btn.generating:hover {
+    background-color: var(--bg-hover);
+    transform: none;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Response History Navigation */
+.response-history-nav {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 8px;
+}
+
+.history-nav-btn {
+    background: none;
+    border: 1px solid var(--separator);
+    color: var(--text-secondary);
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    padding: 0;
+}
+
+.history-nav-btn:hover:not(:disabled) {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.history-nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.history-nav-btn .icon {
+    width: 12px;
+    height: 12px;
+}
+
+.history-counter {
+    font-size: 12px;
+    color: var(--text-secondary);
+    min-width: 32px;
+    text-align: center;
 }
 
 /* Attach Button */
@@ -3110,6 +3191,68 @@ const ChatHistory = {
         return null;
     },
 
+    // Update message at specific index with response history support
+    updateMessageWithHistory(messageIndex, newContent, newModel) {
+        if (!this.currentChatId || !this.chats[this.currentChatId]) return false;
+
+        const messages = this.chats[this.currentChatId].messages;
+        if (messageIndex < 0 || messageIndex >= messages.length) return false;
+
+        const message = messages[messageIndex];
+
+        // Initialize history if not exists
+        if (!message.responseHistory) {
+            message.responseHistory = [{
+                content: message.content,
+                model: message.model,
+                timestamp: message.timestamp
+            }];
+            message.currentHistoryIndex = 0;
+        }
+
+        // Add new response to history
+        message.responseHistory.push({
+            content: newContent,
+            model: newModel,
+            timestamp: new Date().toISOString()
+        });
+
+        // Update current display to new response
+        message.currentHistoryIndex = message.responseHistory.length - 1;
+        message.content = newContent;
+        message.model = newModel;
+        message.timestamp = new Date().toISOString();
+
+        this.chats[this.currentChatId].updatedAt = new Date().toISOString();
+        this.save();
+        return true;
+    },
+
+    // Navigate response history
+    navigateHistory(messageIndex, direction) {
+        if (!this.currentChatId || !this.chats[this.currentChatId]) return null;
+
+        const messages = this.chats[this.currentChatId].messages;
+        if (messageIndex < 0 || messageIndex >= messages.length) return null;
+
+        const message = messages[messageIndex];
+        if (!message.responseHistory || message.responseHistory.length <= 1) return null;
+
+        let newIndex = message.currentHistoryIndex + direction;
+        if (newIndex < 0) newIndex = 0;
+        if (newIndex >= message.responseHistory.length) newIndex = message.responseHistory.length - 1;
+
+        if (newIndex !== message.currentHistoryIndex) {
+            message.currentHistoryIndex = newIndex;
+            const historyItem = message.responseHistory[newIndex];
+            message.content = historyItem.content;
+            message.model = historyItem.model;
+            this.save();
+            return historyItem;
+        }
+        return null;
+    },
+
     save() {
         Storage.saveChats(this.chats);
         Storage.setCurrentChatId(this.currentChatId);
@@ -3278,6 +3421,7 @@ const ChatUI = {
     isGenerating: false,
     currentStreamingElement: null,
     currentStreamingMsgDiv: null,
+    abortController: null,
 
     // File handling
     attachButton: null,
@@ -3317,16 +3461,22 @@ const ChatUI = {
     },
 
     bindEvents() {
-        // Send button
+        // Send button - handles both send and stop
         this.sendButton.addEventListener('click', () => {
-            this.sendMessage();
+            if (this.isGenerating) {
+                this.stopGeneration();
+            } else {
+                this.sendMessage();
+            }
         });
 
         // Enter key (without Shift)
         this.inputField.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                this.sendMessage();
+                if (!this.isGenerating) {
+                    this.sendMessage();
+                }
             }
         });
 
@@ -3661,12 +3811,12 @@ const ChatUI = {
     loadMessages(messages) {
         this.messagesContainer.innerHTML = '';
         messages.forEach((msg, index) => {
-            this.addMessage(msg.role, msg.content, msg.model, false, index, msg.attachments);
+            this.addMessage(msg.role, msg.content, msg.model, false, index, msg.attachments, msg.responseHistory, msg.currentHistoryIndex);
         });
         this.scrollToBottom();
     },
 
-    addMessage(role, content, model = null, scroll = true, messageIndex = null, attachments = null) {
+    addMessage(role, content, model = null, scroll = true, messageIndex = null, attachments = null, responseHistory = null, currentHistoryIndex = 0) {
         const msgDiv = document.createElement('div');
         msgDiv.className = `message ${role}-message`;
 
@@ -3709,6 +3859,29 @@ const ChatUI = {
             actionsDiv.className = 'message-actions';
 
             const idx = messageIndex !== null ? messageIndex : this.getNextAssistantIndex();
+            const hasHistory = responseHistory && responseHistory.length > 1;
+            const historyIndex = currentHistoryIndex || 0;
+            const historyTotal = responseHistory ? responseHistory.length : 1;
+
+            let historyNavHTML = '';
+            if (hasHistory) {
+                historyNavHTML = `
+                    <div class="response-history-nav">
+                        <button class="history-nav-btn" onclick="ChatUI.navigateResponseHistory(${idx}, -1)" ${historyIndex === 0 ? 'disabled' : ''}>
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="15 18 9 12 15 6"/>
+                            </svg>
+                        </button>
+                        <span class="history-counter">${historyIndex + 1} / ${historyTotal}</span>
+                        <button class="history-nav-btn" onclick="ChatUI.navigateResponseHistory(${idx}, 1)" ${historyIndex >= historyTotal - 1 ? 'disabled' : ''}>
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"/>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+            }
+
             actionsDiv.innerHTML = `
                 <button class="message-action-btn" onclick="ChatUI.copyMessage(this)" data-content="${this.escapeAttr(content)}">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -3724,6 +3897,7 @@ const ChatUI = {
                     </svg>
                     Regenerate
                 </button>
+                ${historyNavHTML}
             `;
 
             msgDiv.appendChild(headerDiv);
@@ -3797,23 +3971,22 @@ const ChatUI = {
         });
     },
 
+    navigateResponseHistory(messageIndex, direction) {
+        const result = ChatHistory.navigateHistory(messageIndex, direction);
+        if (result) {
+            // Reload messages to update the display
+            this.loadMessages(ChatHistory.getMessages());
+        }
+    },
+
     async regenerateMessage(messageIndex) {
         if (this.isGenerating) return;
 
         const messages = ChatHistory.getMessages();
-
-        // Find the assistant message at this index and remove it and all after
-        // The messageIndex should be the index of the assistant message
         if (messageIndex < 0 || messageIndex >= messages.length) return;
 
-        // Get messages up to the assistant message (exclude the assistant message)
+        // Get messages up to (but not including) the assistant message for API call
         const messagesUpTo = messages.slice(0, messageIndex);
-
-        // Update chat history - remove messages from messageIndex onwards
-        ChatHistory.setMessages(messagesUpTo);
-
-        // Reload the UI
-        this.loadMessages(messagesUpTo);
 
         // Get the last user message to regenerate
         const lastUserMsg = messagesUpTo.filter(m => m.role === 'user').pop();
@@ -3870,15 +4043,17 @@ const ChatUI = {
             // Finish streaming display
             this.finishStreaming();
 
-            // Save assistant message
-            ChatHistory.addMessage('assistant', fullResponse, modelName);
+            // Update message with history instead of replacing
+            ChatHistory.updateMessageWithHistory(messageIndex, fullResponse, modelName);
+
+            // Reload UI to show updated message with history navigation
+            this.loadMessages(ChatHistory.getMessages());
             Sidebar.refresh();
 
         } catch (error) {
             console.error('Regenerate error:', error);
             this.finishStreaming();
             this.addMessage('assistant', `Error: ${error.message}`);
-            ChatHistory.addMessage('assistant', `Error: ${error.message}`);
         }
 
         this.setGenerating(false);
@@ -4137,20 +4312,33 @@ const ChatUI = {
 
     setGenerating(generating) {
         this.isGenerating = generating;
-        this.sendButton.disabled = generating;
+        this.sendButton.disabled = false; // Always enabled for stop functionality
         this.inputField.disabled = generating;
 
-        // Update send button icon
+        // Update send button icon and style
         if (generating) {
-            this.sendButton.innerHTML = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 6v6l4 2"/>
+            this.sendButton.classList.add('generating');
+            // Stop icon (square)
+            this.sendButton.innerHTML = `<svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="6" y="6" width="12" height="12" rx="2"/>
             </svg>`;
         } else {
+            this.sendButton.classList.remove('generating');
+            // Send icon (arrow)
             this.sendButton.innerHTML = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>`;
         }
+    },
+
+    stopGeneration() {
+        if (this.abortController) {
+            this.abortController.abort();
+            this.abortController = null;
+        }
+        this.finishStreaming();
+        this.setGenerating(false);
+        this.focusInput();
     },
 
     clear() {

@@ -26,7 +26,7 @@
     --error-color: #ff453a;
     --warning-color: #ff9f0a;
     --success-color: #30d158;
-    --user-bubble-bg: #0a84ff;
+    --user-bubble-bg: #3a3a3c;
     --user-bubble-text: #ffffff;
     --code-bg: #1c1c1e;
     --code-header-bg: #2c2c2e;
@@ -53,8 +53,8 @@
     --error-color: #ff3b30;
     --warning-color: #ff9500;
     --success-color: #34c759;
-    --user-bubble-bg: #007aff;
-    --user-bubble-text: #ffffff;
+    --user-bubble-bg: #e5e5ea;
+    --user-bubble-text: #1c1c1e;
     --code-bg: #f2f2f7;
     --code-header-bg: #e5e5ea;
     --inline-code-bg: rgba(0, 0, 0, 0.05);
@@ -747,6 +747,87 @@ body {
 #send-btn .icon {
     width: 18px;
     height: 18px;
+}
+
+/* Send button generating state */
+#send-btn.generating {
+    background-color: transparent;
+    position: relative;
+    cursor: pointer;
+}
+
+#send-btn.generating::before {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border: 2px solid transparent;
+    border-top-color: var(--accent-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+#send-btn.generating .icon {
+    width: 14px;
+    height: 14px;
+    color: var(--text-primary);
+}
+
+#send-btn.generating:hover {
+    background-color: var(--bg-hover);
+    transform: none;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Response History Navigation */
+.response-history-nav {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 8px;
+}
+
+.history-nav-btn {
+    background: none;
+    border: 1px solid var(--separator);
+    color: var(--text-secondary);
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    padding: 0;
+}
+
+.history-nav-btn:hover:not(:disabled) {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.history-nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.history-nav-btn .icon {
+    width: 12px;
+    height: 12px;
+}
+
+.history-counter {
+    font-size: 12px;
+    color: var(--text-secondary);
+    min-width: 32px;
+    text-align: center;
 }
 
 /* Attach Button */
