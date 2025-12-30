@@ -39,6 +39,7 @@ def collect_js_files(src_dir: Path) -> str:
         src_dir / 'js' / 'api' / 'openai.js',
         src_dir / 'js' / 'api' / 'claude.js',
         src_dir / 'js' / 'api' / 'gemini.js',
+        src_dir / 'js' / 'api' / 'deepseek.js',
         src_dir / 'js' / 'api' / 'lmstudio.js',
 
         # UI components

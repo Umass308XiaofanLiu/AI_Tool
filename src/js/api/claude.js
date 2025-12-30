@@ -2,16 +2,18 @@
 
 const ClaudeClient = {
     MODELS: [
-        { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus', displayKey: 'claude-3-opus' },
-        { id: 'claude-3-sonnet-20240229', name: 'Claude 3 Sonnet', displayKey: 'claude-3-sonnet' },
-        { id: 'claude-3-haiku-20240307', name: 'Claude 3 Haiku', displayKey: 'claude-3-haiku' },
-        { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', displayKey: 'claude-3.5-sonnet' },
-        { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', displayKey: 'claude-3.5-haiku' }
+        { id: 'claude-haiku-4-5-20241022', name: 'Claude Haiku 4.5', displayKey: 'claude-haiku-4.5', color: '#d97706' },
+        { id: 'claude-sonnet-4-5-20241022', name: 'Claude Sonnet 4.5', displayKey: 'claude-sonnet-4.5', color: '#d97706' },
+        { id: 'claude-opus-4-5-20241022', name: 'Claude Opus 4.5', displayKey: 'claude-opus-4.5', color: '#d97706' }
     ],
 
-    async chat(messages, model, apiKey, onChunk) {
+    async chat(messages, model, apiKey, onChunk, proxyUrl) {
         if (!apiKey) {
             throw new Error('Anthropic API key not set. Please configure it in Settings.');
+        }
+
+        if (!proxyUrl) {
+            throw new Error('Claude API requires a CORS proxy URL. Please configure it in Settings.');
         }
 
         // Extract system message
@@ -37,15 +39,13 @@ const ClaudeClient = {
             body.system = systemMessage;
         }
 
-        // Note: Direct browser calls to Anthropic API may be blocked by CORS
-        // In production, you'd use a proxy server
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
+        // Use CORS proxy for browser requests
+        const response = await fetch(proxyUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'x-api-key': apiKey,
-                'anthropic-version': '2023-06-01',
-                'anthropic-dangerous-direct-browser-access': 'true'
+                'anthropic-version': '2023-06-01'
             },
             body: JSON.stringify(body)
         });

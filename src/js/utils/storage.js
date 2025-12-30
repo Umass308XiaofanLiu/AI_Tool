@@ -14,42 +14,58 @@ const Storage = {
             apiKeys: {
                 openai: '',
                 anthropic: '',
-                gemini: ''
+                anthropicProxy: '', // CORS proxy URL for Claude
+                gemini: '',
+                deepseek: ''
             },
             lmstudio: {
                 url: 'http://localhost:1234',
                 models: []
             },
             visibleModels: {
-                'gpt-4': true,
-                'gpt-4-turbo': true,
-                'gpt-4o': true,
-                'gpt-4o-mini': true,
-                'gpt-3.5-turbo': true,
-                'claude-3-opus': true,
-                'claude-3-sonnet': true,
-                'claude-3-haiku': true,
-                'claude-3.5-sonnet': true,
-                'claude-3.5-haiku': true,
-                'gemini-pro': true,
-                'gemini-1.5-pro': true,
-                'gemini-1.5-flash': true,
-                'gemini-2.0-flash': true,
-                'lmstudio': true
+                // Gemini models
+                'gemini-2.5-flash-lite': true,
+                'gemini-3-flash': true,
+                'gemini-3-pro': true,
+                // OpenAI GPT-5 models
+                'gpt-5-nano': true,
+                'gpt-5-mini': true,
+                'gpt-5.2': true,
+                // Claude 4.5 models
+                'claude-haiku-4.5': true,
+                'claude-sonnet-4.5': true,
+                'claude-opus-4.5': true,
+                // DeepSeek models
+                'deepseek-v3.2': true,
+                'deepseek-v3.2-reasoner': true
             },
-            currentModel: 'gpt-4',
-            theme: 'dark'
+            visibleLocalModels: {}, // Track visibility of individual LM Studio models
+            currentModel: 'gemini-2.5-flash-lite',
+            theme: 'system' // 'light', 'dark', 'system'
         };
 
         try {
             const saved = localStorage.getItem(this.KEYS.SETTINGS);
             if (saved) {
-                return { ...defaults, ...JSON.parse(saved) };
+                const parsed = JSON.parse(saved);
+                return this.deepMerge(defaults, parsed);
             }
         } catch (e) {
             console.error('Failed to load settings:', e);
         }
         return defaults;
+    },
+
+    deepMerge(target, source) {
+        const result = { ...target };
+        for (const key in source) {
+            if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+                result[key] = this.deepMerge(target[key] || {}, source[key]);
+            } else {
+                result[key] = source[key];
+            }
+        }
+        return result;
     },
 
     saveSettings(settings) {
@@ -98,5 +114,42 @@ const Storage = {
     // Generate unique ID
     generateId() {
         return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+    }
+};
+
+// ==================== Theme Manager ====================
+const ThemeManager = {
+    init() {
+        this.applyTheme(Storage.getSettings().theme || 'system');
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            const settings = Storage.getSettings();
+            if (settings.theme === 'system') {
+                this.applyTheme('system');
+            }
+        });
+    },
+
+    applyTheme(theme) {
+        const root = document.documentElement;
+
+        if (theme === 'system') {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            root.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+        } else {
+            root.setAttribute('data-theme', theme);
+        }
+    },
+
+    setTheme(theme) {
+        const settings = Storage.getSettings();
+        settings.theme = theme;
+        Storage.saveSettings(settings);
+        this.applyTheme(theme);
+    },
+
+    getCurrentTheme() {
+        return Storage.getSettings().theme || 'system';
     }
 };

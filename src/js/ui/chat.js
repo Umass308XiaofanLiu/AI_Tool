@@ -55,12 +55,24 @@ const ChatUI = {
 
         selector.innerHTML = '';
 
-        // OpenAI models
+        // Gemini models (first as in screenshot)
+        GeminiClient.MODELS.forEach(model => {
+            if (settings.visibleModels[model.displayKey] !== false) {
+                const option = document.createElement('option');
+                option.value = `gemini:${model.id}`;
+                option.textContent = model.name;
+                option.style.color = model.color;
+                selector.appendChild(option);
+            }
+        });
+
+        // OpenAI GPT-5 models
         OpenAIClient.MODELS.forEach(model => {
-            if (settings.visibleModels[model.id] !== false) {
+            if (settings.visibleModels[model.displayKey] !== false) {
                 const option = document.createElement('option');
                 option.value = `openai:${model.id}`;
                 option.textContent = model.name;
+                option.style.color = model.color;
                 selector.appendChild(option);
             }
         });
@@ -71,37 +83,37 @@ const ChatUI = {
                 const option = document.createElement('option');
                 option.value = `anthropic:${model.id}`;
                 option.textContent = model.name;
+                option.style.color = model.color;
                 selector.appendChild(option);
             }
         });
 
-        // Gemini models
-        GeminiClient.MODELS.forEach(model => {
+        // DeepSeek models
+        DeepSeekClient.MODELS.forEach(model => {
             if (settings.visibleModels[model.displayKey] !== false) {
                 const option = document.createElement('option');
-                option.value = `gemini:${model.id}`;
+                option.value = `deepseek:${model.id}`;
                 option.textContent = model.name;
+                option.style.color = model.color;
                 selector.appendChild(option);
             }
         });
 
         // LM Studio models
-        if (settings.visibleModels['lmstudio'] !== false) {
-            const lmModels = settings.lmstudio?.models || [];
-            if (lmModels.length > 0) {
-                lmModels.forEach(model => {
-                    const option = document.createElement('option');
-                    option.value = `lmstudio:${model.id || model}`;
-                    option.textContent = `LM Studio: ${model.name || model}`;
-                    selector.appendChild(option);
-                });
-            } else {
+        const lmModels = settings.lmstudio?.models || [];
+        const visibleLocalModels = settings.visibleLocalModels || {};
+
+        lmModels.forEach(model => {
+            const modelId = model.id || model;
+            const modelName = model.name || model;
+            // Check if this specific local model is visible
+            if (visibleLocalModels[modelId] !== false) {
                 const option = document.createElement('option');
-                option.value = 'lmstudio:local-model';
-                option.textContent = 'LM Studio (Local)';
+                option.value = `lmstudio:${modelId}`;
+                option.textContent = modelName;
                 selector.appendChild(option);
             }
-        }
+        });
 
         // Set current model
         if (settings.currentModel) {
@@ -114,8 +126,9 @@ const ChatUI = {
         // Save selection
         selector.addEventListener('change', () => {
             const [provider, modelId] = selector.value.split(':');
-            settings.currentModel = modelId;
-            Storage.saveSettings(settings);
+            const currentSettings = Storage.getSettings();
+            currentSettings.currentModel = modelId;
+            Storage.saveSettings(currentSettings);
         });
     },
 
@@ -184,7 +197,6 @@ const ChatUI = {
 
     appendToStream(text) {
         if (this.currentStreamingElement) {
-            // For streaming, just append raw text and update periodically
             const currentText = this.currentStreamingElement.dataset.rawText || '';
             this.currentStreamingElement.dataset.rawText = currentText + text;
             this.currentStreamingElement.textContent = this.currentStreamingElement.dataset.rawText;
@@ -253,10 +265,19 @@ const ChatUI = {
                     fullResponse = await OpenAIClient.chat(messages, modelId, settings.apiKeys.openai, onChunk);
                     break;
                 case 'anthropic':
-                    fullResponse = await ClaudeClient.chat(messages, modelId, settings.apiKeys.anthropic, onChunk);
+                    fullResponse = await ClaudeClient.chat(
+                        messages,
+                        modelId,
+                        settings.apiKeys.anthropic,
+                        onChunk,
+                        settings.apiKeys.anthropicProxy
+                    );
                     break;
                 case 'gemini':
                     fullResponse = await GeminiClient.chat(messages, modelId, settings.apiKeys.gemini, onChunk);
+                    break;
+                case 'deepseek':
+                    fullResponse = await DeepSeekClient.chat(messages, modelId, settings.apiKeys.deepseek, onChunk);
                     break;
                 case 'lmstudio':
                     fullResponse = await LMStudioClient.chat(messages, modelId, settings.lmstudio?.url, onChunk);

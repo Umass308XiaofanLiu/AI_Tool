@@ -2,6 +2,9 @@
 
 const App = {
     init() {
+        // Initialize theme first
+        ThemeManager.init();
+
         // Initialize components
         ChatHistory.init();
         Sidebar.init();

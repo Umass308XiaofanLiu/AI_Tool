@@ -38,6 +38,13 @@ const SettingsDialog = {
             this.connectLMStudio();
         });
 
+        // Theme selector
+        document.querySelectorAll('input[name="theme"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                ThemeManager.setTheme(e.target.value);
+            });
+        });
+
         // Show/hide API key toggles
         document.querySelectorAll('.toggle-visibility-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -93,18 +100,64 @@ const SettingsDialog = {
         // API Keys
         document.getElementById('openai-key').value = this.settings.apiKeys?.openai || '';
         document.getElementById('anthropic-key').value = this.settings.apiKeys?.anthropic || '';
+        document.getElementById('anthropic-proxy').value = this.settings.apiKeys?.anthropicProxy || '';
         document.getElementById('gemini-key').value = this.settings.apiKeys?.gemini || '';
+        document.getElementById('deepseek-key').value = this.settings.apiKeys?.deepseek || '';
 
         // LM Studio
         document.getElementById('lmstudio-url').value = this.settings.lmstudio?.url || 'http://localhost:1234';
         this.updateLMStudioStatus('');
 
-        // Model visibility
+        // Display existing LM Studio models if any
+        if (this.settings.lmstudio?.models?.length > 0) {
+            this.displayLMStudioModels(this.settings.lmstudio.models);
+        }
+
+        // Theme
+        const currentTheme = this.settings.theme || 'system';
+        const themeRadio = document.querySelector(`input[name="theme"][value="${currentTheme}"]`);
+        if (themeRadio) {
+            themeRadio.checked = true;
+        }
+
+        // Model visibility - Online models
         const visibleModels = this.settings.visibleModels || {};
         document.querySelectorAll('.model-visibility-checkbox').forEach(checkbox => {
             const modelKey = checkbox.dataset.model;
             checkbox.checked = visibleModels[modelKey] !== false;
         });
+
+        // Model visibility - Local models
+        this.updateLocalModelsVisibility();
+    },
+
+    updateLocalModelsVisibility() {
+        const container = document.getElementById('local-models-visibility');
+        if (!container) return;
+
+        const lmModels = this.settings.lmstudio?.models || [];
+        const visibleLocalModels = this.settings.visibleLocalModels || {};
+
+        if (lmModels.length === 0) {
+            container.innerHTML = '<p class="no-models">Connect to LM Studio to see available models</p>';
+            return;
+        }
+
+        container.innerHTML = lmModels.map(model => {
+            const modelId = model.id || model;
+            const modelName = model.name || model;
+            const isChecked = visibleLocalModels[modelId] !== false;
+            return `
+                <div class="checkbox-item">
+                    <input type="checkbox"
+                           class="local-model-visibility-checkbox"
+                           data-model="${modelId}"
+                           id="vis-local-${modelId.replace(/[^a-z0-9]/gi, '-')}"
+                           ${isChecked ? 'checked' : ''}>
+                    <label for="vis-local-${modelId.replace(/[^a-z0-9]/gi, '-')}">${modelName}</label>
+                </div>
+            `;
+        }).join('');
     },
 
     async connectLMStudio() {
@@ -120,8 +173,19 @@ const SettingsDialog = {
                     url: url,
                     models: models
                 };
+                // Initialize visibility for new models
+                if (!this.settings.visibleLocalModels) {
+                    this.settings.visibleLocalModels = {};
+                }
+                models.forEach(m => {
+                    const modelId = m.id || m;
+                    if (this.settings.visibleLocalModels[modelId] === undefined) {
+                        this.settings.visibleLocalModels[modelId] = true;
+                    }
+                });
                 this.updateLMStudioStatus(`Connected! Found ${models.length} model(s)`, 'success');
                 this.displayLMStudioModels(models);
+                this.updateLocalModelsVisibility();
             } else {
                 this.updateLMStudioStatus('Connected, but no models loaded', 'warning');
                 this.settings.lmstudio = { url: url, models: [] };
@@ -157,21 +221,38 @@ const SettingsDialog = {
         this.settings.apiKeys = {
             openai: document.getElementById('openai-key').value.trim(),
             anthropic: document.getElementById('anthropic-key').value.trim(),
-            gemini: document.getElementById('gemini-key').value.trim()
+            anthropicProxy: document.getElementById('anthropic-proxy').value.trim(),
+            gemini: document.getElementById('gemini-key').value.trim(),
+            deepseek: document.getElementById('deepseek-key').value.trim()
         };
 
         // Save LM Studio URL
         this.settings.lmstudio = this.settings.lmstudio || {};
         this.settings.lmstudio.url = document.getElementById('lmstudio-url').value.trim() || 'http://localhost:1234';
 
-        // Save model visibility
+        // Save theme
+        const selectedTheme = document.querySelector('input[name="theme"]:checked');
+        if (selectedTheme) {
+            this.settings.theme = selectedTheme.value;
+        }
+
+        // Save online model visibility
         this.settings.visibleModels = {};
         document.querySelectorAll('.model-visibility-checkbox').forEach(checkbox => {
             this.settings.visibleModels[checkbox.dataset.model] = checkbox.checked;
         });
 
+        // Save local model visibility
+        this.settings.visibleLocalModels = this.settings.visibleLocalModels || {};
+        document.querySelectorAll('.local-model-visibility-checkbox').forEach(checkbox => {
+            this.settings.visibleLocalModels[checkbox.dataset.model] = checkbox.checked;
+        });
+
         // Save to storage
         Storage.saveSettings(this.settings);
+
+        // Apply theme
+        ThemeManager.applyTheme(this.settings.theme);
 
         // Refresh UI
         ChatUI.initModelSelector();

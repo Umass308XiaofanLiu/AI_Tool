@@ -80,142 +80,217 @@
                 <button class="settings-tab-btn active" data-tab="api-keys">API Keys</button>
                 <button class="settings-tab-btn" data-tab="lmstudio">LM Studio</button>
                 <button class="settings-tab-btn" data-tab="models">Model Visibility</button>
+                <button class="settings-tab-btn" data-tab="appearance">Appearance</button>
             </div>
 
             <div class="settings-content">
                 <!-- API Keys Tab -->
                 <div class="settings-tab-content active" id="tab-api-keys">
-                    <h3 class="section-title">OpenAI</h3>
-                    <div class="form-group">
-                        <label for="openai-key">API Key</label>
-                        <div class="input-with-button">
-                            <input type="password" id="openai-key" placeholder="sk-...">
-                            <button class="toggle-visibility-btn">👁️</button>
+                    <!-- Google Gemini -->
+                    <div class="api-section">
+                        <div class="api-section-header">
+                            <span class="api-icon" style="color: #4285f4;">🌐</span>
+                            <h3 class="section-title">GOOGLE GEMINI API</h3>
+                        </div>
+                        <div class="form-group">
+                            <div class="input-with-button">
+                                <input type="password" id="gemini-key" placeholder="Enter your Gemini API key...">
+                                <button class="toggle-visibility-btn">👁️</button>
+                            </div>
+                            <p class="api-hint">Get your API key from <a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a></p>
                         </div>
                     </div>
 
-                    <h3 class="section-title">Anthropic (Claude)</h3>
-                    <div class="form-group">
-                        <label for="anthropic-key">API Key</label>
-                        <div class="input-with-button">
-                            <input type="password" id="anthropic-key" placeholder="sk-ant-...">
-                            <button class="toggle-visibility-btn">👁️</button>
+                    <!-- OpenAI -->
+                    <div class="api-section">
+                        <div class="api-section-header">
+                            <span class="api-icon" style="color: #10a37f;">🤖</span>
+                            <h3 class="section-title">OPENAI API</h3>
+                        </div>
+                        <div class="form-group">
+                            <div class="input-with-button">
+                                <input type="password" id="openai-key" placeholder="Enter your OpenAI API key...">
+                                <button class="toggle-visibility-btn">👁️</button>
+                            </div>
+                            <p class="api-hint">Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank">OpenAI Platform</a></p>
                         </div>
                     </div>
 
-                    <h3 class="section-title">Google (Gemini)</h3>
-                    <div class="form-group">
-                        <label for="gemini-key">API Key</label>
-                        <div class="input-with-button">
-                            <input type="password" id="gemini-key" placeholder="AI...">
-                            <button class="toggle-visibility-btn">👁️</button>
+                    <!-- Anthropic Claude -->
+                    <div class="api-section">
+                        <div class="api-section-header">
+                            <span class="api-icon" style="color: #d97706;">🔶</span>
+                            <h3 class="section-title">ANTHROPIC CLAUDE API</h3>
+                        </div>
+                        <div class="form-group">
+                            <div class="input-with-button">
+                                <input type="password" id="anthropic-key" placeholder="Enter your Anthropic API key...">
+                                <button class="toggle-visibility-btn">👁️</button>
+                            </div>
+                            <p class="api-hint">Get your API key from <a href="https://console.anthropic.com/" target="_blank">Anthropic Console</a></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="anthropic-proxy">PROXY URL (REQUIRED FOR CORS)</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">🌐</span>
+                                <input type="text" id="anthropic-proxy" placeholder="https://your-claude-proxy.workers.dev">
+                            </div>
+                            <p class="api-hint">Claude API requires a CORS proxy. Use <a href="https://workers.cloudflare.com/" target="_blank">Cloudflare Workers</a> to create one.</p>
+                        </div>
+                    </div>
+
+                    <!-- DeepSeek -->
+                    <div class="api-section">
+                        <div class="api-section-header">
+                            <span class="api-icon" style="color: #6366f1;">🔮</span>
+                            <h3 class="section-title">DEEPSEEK API</h3>
+                        </div>
+                        <div class="form-group">
+                            <div class="input-with-button">
+                                <input type="password" id="deepseek-key" placeholder="Enter your DeepSeek API key...">
+                                <button class="toggle-visibility-btn">👁️</button>
+                            </div>
+                            <p class="api-hint">Get your API key from <a href="https://platform.deepseek.com/" target="_blank">DeepSeek Platform</a></p>
                         </div>
                     </div>
                 </div>
 
                 <!-- LM Studio Tab -->
                 <div class="settings-tab-content" id="tab-lmstudio">
-                    <h3 class="section-title">LM Studio Connection</h3>
-                    <div class="form-group">
-                        <label for="lmstudio-url">Server URL</label>
-                        <input type="text" id="lmstudio-url" placeholder="http://localhost:1234">
-                    </div>
-                    <div class="connect-row">
-                        <button id="lmstudio-connect-btn">Connect & Verify</button>
-                        <span id="lmstudio-status" class="connection-status"></span>
+                    <div class="api-section">
+                        <div class="api-section-header">
+                            <span class="api-icon">💻</span>
+                            <h3 class="section-title">LM STUDIO CONNECTION</h3>
+                        </div>
+                        <div class="form-group">
+                            <label for="lmstudio-url">Server URL</label>
+                            <input type="text" id="lmstudio-url" placeholder="http://localhost:1234">
+                        </div>
+                        <div class="connect-row">
+                            <button id="lmstudio-connect-btn">Connect & Verify</button>
+                            <span id="lmstudio-status" class="connection-status"></span>
+                        </div>
                     </div>
 
-                    <h3 class="section-title" style="margin-top: 24px;">Available Models</h3>
-                    <div id="lmstudio-models-list">
-                        <p class="no-models">Click "Connect & Verify" to detect models</p>
+                    <div class="api-section" style="margin-top: 24px;">
+                        <h3 class="section-title">DETECTED MODELS</h3>
+                        <div id="lmstudio-models-list">
+                            <p class="no-models">Click "Connect & Verify" to detect models</p>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Model Visibility Tab -->
                 <div class="settings-tab-content" id="tab-models">
-                    <h3 class="section-title">Select Visible Models</h3>
+                    <!-- Online Models -->
+                    <div class="visibility-section">
+                        <div class="visibility-header">
+                            <span class="visibility-icon">🌐</span>
+                            <h3>ONLINE MODELS VISIBILITY</h3>
+                        </div>
+                        <p class="visibility-hint">Select which online models to show in the model selector.</p>
 
-                    <div class="models-group">
-                        <div class="models-group-title">OpenAI</div>
-                        <div class="checkbox-group">
+                        <div class="models-grid">
+                            <!-- Gemini -->
                             <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="gpt-4" id="vis-gpt-4" checked>
-                                <label for="vis-gpt-4">GPT-4</label>
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="gemini-2.5-flash-lite" id="vis-gemini-25-flash-lite" checked>
+                                <label for="vis-gemini-25-flash-lite" style="color: #4285f4;">Gemini 2.5 Flash Lite</label>
                             </div>
                             <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="gpt-4-turbo" id="vis-gpt-4-turbo" checked>
-                                <label for="vis-gpt-4-turbo">GPT-4 Turbo</label>
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="gemini-3-flash" id="vis-gemini-3-flash" checked>
+                                <label for="vis-gemini-3-flash" style="color: #4285f4;">Gemini 3 Flash</label>
                             </div>
                             <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="gpt-4o" id="vis-gpt-4o" checked>
-                                <label for="vis-gpt-4o">GPT-4o</label>
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="gemini-3-pro" id="vis-gemini-3-pro" checked>
+                                <label for="vis-gemini-3-pro" style="color: #4285f4;">Gemini 3 Pro</label>
+                            </div>
+
+                            <!-- GPT-5 -->
+                            <div class="checkbox-item">
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="gpt-5-nano" id="vis-gpt-5-nano" checked>
+                                <label for="vis-gpt-5-nano" style="color: #10a37f;">GPT-5 Nano</label>
                             </div>
                             <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="gpt-4o-mini" id="vis-gpt-4o-mini" checked>
-                                <label for="vis-gpt-4o-mini">GPT-4o Mini</label>
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="gpt-5-mini" id="vis-gpt-5-mini" checked>
+                                <label for="vis-gpt-5-mini" style="color: #10a37f;">GPT-5 Mini</label>
                             </div>
                             <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="gpt-3.5-turbo" id="vis-gpt-35-turbo" checked>
-                                <label for="vis-gpt-35-turbo">GPT-3.5 Turbo</label>
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="gpt-5.2" id="vis-gpt-52" checked>
+                                <label for="vis-gpt-52" style="color: #10a37f;">GPT-5.2</label>
+                            </div>
+
+                            <!-- Claude 4.5 -->
+                            <div class="checkbox-item">
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="claude-haiku-4.5" id="vis-claude-haiku-45" checked>
+                                <label for="vis-claude-haiku-45" style="color: #d97706;">Claude Haiku 4.5</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="claude-sonnet-4.5" id="vis-claude-sonnet-45" checked>
+                                <label for="vis-claude-sonnet-45" style="color: #d97706;">Claude Sonnet 4.5</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="claude-opus-4.5" id="vis-claude-opus-45" checked>
+                                <label for="vis-claude-opus-45" style="color: #d97706;">Claude Opus 4.5</label>
+                            </div>
+
+                            <!-- DeepSeek -->
+                            <div class="checkbox-item">
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="deepseek-v3.2" id="vis-deepseek-v32" checked>
+                                <label for="vis-deepseek-v32" style="color: #6366f1;">DeepSeek V3.2</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" class="model-visibility-checkbox" data-model="deepseek-v3.2-reasoner" id="vis-deepseek-v32-reasoner" checked>
+                                <label for="vis-deepseek-v32-reasoner" style="color: #6366f1;">DeepSeek V3.2 Reasoner</label>
                             </div>
                         </div>
                     </div>
 
-                    <div class="models-group">
-                        <div class="models-group-title">Anthropic</div>
-                        <div class="checkbox-group">
-                            <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="claude-3-opus" id="vis-claude-3-opus" checked>
-                                <label for="vis-claude-3-opus">Claude 3 Opus</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="claude-3-sonnet" id="vis-claude-3-sonnet" checked>
-                                <label for="vis-claude-3-sonnet">Claude 3 Sonnet</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="claude-3-haiku" id="vis-claude-3-haiku" checked>
-                                <label for="vis-claude-3-haiku">Claude 3 Haiku</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="claude-3.5-sonnet" id="vis-claude-35-sonnet" checked>
-                                <label for="vis-claude-35-sonnet">Claude 3.5 Sonnet</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="claude-3.5-haiku" id="vis-claude-35-haiku" checked>
-                                <label for="vis-claude-35-haiku">Claude 3.5 Haiku</label>
-                            </div>
+                    <!-- Local Models -->
+                    <div class="visibility-section" style="margin-top: 24px;">
+                        <div class="visibility-header">
+                            <span class="visibility-icon">💻</span>
+                            <h3>LOCAL MODELS VISIBILITY</h3>
+                        </div>
+                        <p class="visibility-hint">Select which local models to show in the model selector.</p>
+                        <div id="local-models-visibility" class="models-grid">
+                            <p class="no-models">Connect to LM Studio to see available models</p>
                         </div>
                     </div>
+                </div>
 
-                    <div class="models-group">
-                        <div class="models-group-title">Google</div>
-                        <div class="checkbox-group">
-                            <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="gemini-pro" id="vis-gemini-pro" checked>
-                                <label for="vis-gemini-pro">Gemini Pro</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="gemini-1.5-pro" id="vis-gemini-15-pro" checked>
-                                <label for="vis-gemini-15-pro">Gemini 1.5 Pro</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="gemini-1.5-flash" id="vis-gemini-15-flash" checked>
-                                <label for="vis-gemini-15-flash">Gemini 1.5 Flash</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="gemini-2.0-flash" id="vis-gemini-20-flash" checked>
-                                <label for="vis-gemini-20-flash">Gemini 2.0 Flash</label>
-                            </div>
+                <!-- Appearance Tab -->
+                <div class="settings-tab-content" id="tab-appearance">
+                    <div class="api-section">
+                        <div class="api-section-header">
+                            <span class="api-icon">🎨</span>
+                            <h3 class="section-title">THEME</h3>
                         </div>
-                    </div>
+                        <p class="visibility-hint">Choose your preferred color scheme.</p>
 
-                    <div class="models-group">
-                        <div class="models-group-title">Local Models</div>
-                        <div class="checkbox-group">
-                            <div class="checkbox-item">
-                                <input type="checkbox" class="model-visibility-checkbox" data-model="lmstudio" id="vis-lmstudio" checked>
-                                <label for="vis-lmstudio">LM Studio Models</label>
-                            </div>
+                        <div class="theme-options">
+                            <label class="theme-option">
+                                <input type="radio" name="theme" value="light">
+                                <span class="theme-option-content">
+                                    <span class="theme-icon">☀️</span>
+                                    <span class="theme-label">Light</span>
+                                </span>
+                            </label>
+
+                            <label class="theme-option">
+                                <input type="radio" name="theme" value="dark">
+                                <span class="theme-option-content">
+                                    <span class="theme-icon">🌙</span>
+                                    <span class="theme-label">Dark</span>
+                                </span>
+                            </label>
+
+                            <label class="theme-option">
+                                <input type="radio" name="theme" value="system" checked>
+                                <span class="theme-option-content">
+                                    <span class="theme-icon">💻</span>
+                                    <span class="theme-label">System</span>
+                                </span>
+                            </label>
                         </div>
                     </div>
                 </div>

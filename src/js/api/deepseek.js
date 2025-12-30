@@ -1,18 +1,17 @@
-// ==================== OpenAI API Client ====================
+// ==================== DeepSeek API Client ====================
 
-const OpenAIClient = {
+const DeepSeekClient = {
     MODELS: [
-        { id: 'gpt-5-nano', name: 'GPT-5 Nano', displayKey: 'gpt-5-nano', color: '#10a37f' },
-        { id: 'gpt-5-mini', name: 'GPT-5 Mini', displayKey: 'gpt-5-mini', color: '#10a37f' },
-        { id: 'gpt-5.2', name: 'GPT-5.2', displayKey: 'gpt-5.2', color: '#10a37f' }
+        { id: 'deepseek-chat', name: 'DeepSeek V3.2', displayKey: 'deepseek-v3.2', color: '#6366f1' },
+        { id: 'deepseek-reasoner', name: 'DeepSeek V3.2 Reasoner', displayKey: 'deepseek-v3.2-reasoner', color: '#6366f1' }
     ],
 
     async chat(messages, model, apiKey, onChunk) {
         if (!apiKey) {
-            throw new Error('OpenAI API key not set. Please configure it in Settings.');
+            throw new Error('DeepSeek API key not set. Please configure it in Settings.');
         }
 
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        const response = await fetch('https://api.deepseek.com/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -27,7 +26,7 @@ const OpenAIClient = {
 
         if (!response.ok) {
             const error = await response.json().catch(() => ({}));
-            throw new Error(error.error?.message || `OpenAI API error: ${response.status}`);
+            throw new Error(error.error?.message || `DeepSeek API error: ${response.status}`);
         }
 
         return this.streamResponse(response, onChunk);
@@ -69,7 +68,7 @@ const OpenAIClient = {
 
     async validate(apiKey) {
         try {
-            const response = await fetch('https://api.openai.com/v1/models', {
+            const response = await fetch('https://api.deepseek.com/models', {
                 headers: {
                     'Authorization': `Bearer ${apiKey}`
                 }
