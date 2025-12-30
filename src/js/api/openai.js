@@ -2,9 +2,9 @@
 
 const OpenAIClient = {
     MODELS: [
-        { id: 'gpt-4o', name: 'GPT-4o', displayKey: 'gpt-4o', color: '#10a37f' },
-        { id: 'gpt-4o-mini', name: 'GPT-4o Mini', displayKey: 'gpt-4o-mini', color: '#10a37f' },
-        { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', displayKey: 'gpt-4-turbo', color: '#10a37f' }
+        { id: 'gpt-5-nano', name: 'GPT-5 Nano', displayKey: 'gpt-5-nano', color: '#10a37f' },
+        { id: 'gpt-5-mini', name: 'GPT-5 Mini', displayKey: 'gpt-5-mini', color: '#10a37f' },
+        { id: 'gpt-5.2', name: 'GPT-5.2', displayKey: 'gpt-5.2', color: '#10a37f' }
     ],
 
     async chat(messages, model, apiKey, onChunk) {
@@ -37,13 +37,15 @@ const OpenAIClient = {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let fullContent = '';
+        let buffer = '';
 
         while (true) {
             const { done, value } = await reader.read();
             if (done) break;
 
-            const chunk = decoder.decode(value);
-            const lines = chunk.split('\n');
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
 
             for (const line of lines) {
                 if (line.startsWith('data: ')) {

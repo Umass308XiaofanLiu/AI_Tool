@@ -2,9 +2,9 @@
 
 const ClaudeClient = {
     MODELS: [
-        { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', displayKey: 'claude-3.5-haiku', color: '#d97706' },
-        { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', displayKey: 'claude-3.5-sonnet', color: '#d97706' },
-        { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus', displayKey: 'claude-3-opus', color: '#d97706' }
+        { id: 'claude-haiku-4.5', name: 'Claude Haiku 4.5', displayKey: 'claude-haiku-4.5', color: '#d97706' },
+        { id: 'claude-sonnet-4.5', name: 'Claude Sonnet 4.5', displayKey: 'claude-sonnet-4.5', color: '#d97706' },
+        { id: 'claude-opus-4.5', name: 'Claude Opus 4.5', displayKey: 'claude-opus-4.5', color: '#d97706' }
     ],
 
     async chat(messages, model, apiKey, onChunk, proxyUrl) {
