@@ -154,19 +154,34 @@ const ChatUI = {
         const msgDiv = document.createElement('div');
         msgDiv.className = `message ${role}-message`;
 
-        const headerDiv = document.createElement('div');
-        headerDiv.className = 'message-header';
-        headerDiv.innerHTML = `
-            <span class="message-role">${role === 'user' ? 'You' : 'Assistant'}</span>
-            ${model ? `<span class="message-model">${model}</span>` : ''}
-        `;
+        if (role === 'user') {
+            // User message - right aligned bubble
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'message-bubble';
 
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'message-content';
-        contentDiv.innerHTML = MarkdownParser.parse(content);
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerHTML = MarkdownParser.parse(content);
 
-        msgDiv.appendChild(headerDiv);
-        msgDiv.appendChild(contentDiv);
+            bubbleDiv.appendChild(contentDiv);
+            msgDiv.appendChild(bubbleDiv);
+        } else {
+            // Assistant message - centered with icon
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'message-header';
+            headerDiv.innerHTML = `
+                <div class="assistant-icon">✦</div>
+                ${model ? `<span class="message-model">${model}</span>` : '<span class="message-model">Assistant</span>'}
+            `;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerHTML = MarkdownParser.parse(content);
+
+            msgDiv.appendChild(headerDiv);
+            msgDiv.appendChild(contentDiv);
+        }
+
         this.messagesContainer.appendChild(msgDiv);
 
         if (scroll) {
@@ -178,9 +193,16 @@ const ChatUI = {
         const msgDiv = document.createElement('div');
         msgDiv.className = 'message assistant-message streaming';
 
+        // Get selected model name for header
+        const selector = document.getElementById('model-selector');
+        const modelName = selector.options[selector.selectedIndex]?.text || 'Assistant';
+
         const headerDiv = document.createElement('div');
         headerDiv.className = 'message-header';
-        headerDiv.innerHTML = '<span class="message-role">Assistant</span>';
+        headerDiv.innerHTML = `
+            <div class="assistant-icon">✦</div>
+            <span class="message-model">${modelName}</span>
+        `;
 
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content';

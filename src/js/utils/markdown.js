@@ -7,9 +7,17 @@ const MarkdownParser = {
 
         let html = this.escapeHtml(text);
 
-        // Code blocks (```code```)
+        // Code blocks (```language\ncode```)
         html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => {
-            return `<pre><code class="language-${lang}">${code.trim()}</code></pre>`;
+            const language = lang || 'code';
+            const codeId = 'code-' + Math.random().toString(36).substr(2, 9);
+            return `<div class="code-block-wrapper">
+                <div class="code-block-header">
+                    <span class="code-language">${language}</span>
+                    <button class="code-copy-btn" onclick="MarkdownParser.copyCode('${codeId}')">Copy</button>
+                </div>
+                <pre><code id="${codeId}" class="code-block language-${language}">${code.trim()}</code></pre>
+            </div>`;
         });
 
         // Inline code (`code`)
@@ -39,7 +47,7 @@ const MarkdownParser = {
         html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
 
         // Blockquotes
-        html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+        html = html.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
 
         // Horizontal rules
         html = html.replace(/^---$/gm, '<hr>');
@@ -49,6 +57,7 @@ const MarkdownParser = {
 
         // Clean up multiple <br> after block elements
         html = html.replace(/(<\/pre>)<br>/g, '$1');
+        html = html.replace(/(<\/div>)<br>/g, '$1');
         html = html.replace(/(<\/h[1-3]>)<br>/g, '$1');
         html = html.replace(/(<\/ul>)<br>/g, '$1');
         html = html.replace(/(<\/blockquote>)<br>/g, '$1');
@@ -60,5 +69,25 @@ const MarkdownParser = {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    },
+
+    copyCode(codeId) {
+        const codeElement = document.getElementById(codeId);
+        if (codeElement) {
+            const text = codeElement.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                // Find the button and update its text
+                const btn = codeElement.closest('.code-block-wrapper').querySelector('.code-copy-btn');
+                if (btn) {
+                    const originalText = btn.textContent;
+                    btn.textContent = 'Copied!';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                    }, 2000);
+                }
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
     }
 };
