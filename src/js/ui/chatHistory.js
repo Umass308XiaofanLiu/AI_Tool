@@ -62,6 +62,38 @@ const ChatHistory = {
         return this.chats[id].messages;
     },
 
+    // Get messages for display - respects branching
+    getDisplayMessages(chatId = null) {
+        const id = chatId || this.currentChatId;
+        if (!id || !this.chats[id]) return [];
+
+        const messages = this.chats[id].messages;
+        const result = [];
+
+        for (let i = 0; i < messages.length; i++) {
+            const msg = messages[i];
+            result.push(msg);
+
+            // If this message has history and current branch has continuation that's truncated
+            // We stop here and don't show messages after
+            if (msg.responseHistory && msg.currentHistoryIndex !== undefined) {
+                const currentEntry = msg.responseHistory[msg.currentHistoryIndex];
+                if (currentEntry && currentEntry.truncateAfter) {
+                    break;
+                }
+            }
+        }
+
+        return result;
+    },
+
+    // Get messages for API - only up to a certain point for regeneration
+    getMessagesForAPI(upToIndex) {
+        if (!this.currentChatId || !this.chats[this.currentChatId]) return [];
+        const messages = this.chats[this.currentChatId].messages;
+        return messages.slice(0, upToIndex);
+    },
+
     setMessages(messages, chatId = null) {
         const id = chatId || this.currentChatId;
         if (!id || !this.chats[id]) return false;
@@ -120,8 +152,8 @@ const ChatHistory = {
         return null;
     },
 
-    // Update message at specific index with response history support
-    updateMessageWithHistory(messageIndex, newContent, newModel) {
+    // Prepare for regeneration - stores continuation and prepares for new branch
+    prepareRegenerate(messageIndex) {
         if (!this.currentChatId || !this.chats[this.currentChatId]) return false;
 
         const messages = this.chats[this.currentChatId].messages;
@@ -134,16 +166,40 @@ const ChatHistory = {
             message.responseHistory = [{
                 content: message.content,
                 model: message.model,
-                timestamp: message.timestamp
+                timestamp: message.timestamp,
+                continuation: messages.slice(messageIndex + 1) // Store all messages after this
             }];
             message.currentHistoryIndex = 0;
+        } else {
+            // Update current entry's continuation with any new messages
+            const currentEntry = message.responseHistory[message.currentHistoryIndex];
+            if (currentEntry && !currentEntry.continuation) {
+                currentEntry.continuation = messages.slice(messageIndex + 1);
+            }
         }
 
-        // Add new response to history
+        // Truncate messages array to this point (visually creating new branch)
+        this.chats[this.currentChatId].messages = messages.slice(0, messageIndex + 1);
+
+        this.save();
+        return true;
+    },
+
+    // Complete regeneration - add new response as new branch
+    completeRegenerate(messageIndex, newContent, newModel) {
+        if (!this.currentChatId || !this.chats[this.currentChatId]) return false;
+
+        const messages = this.chats[this.currentChatId].messages;
+        if (messageIndex < 0 || messageIndex >= messages.length) return false;
+
+        const message = messages[messageIndex];
+
+        // Add new response to history (without continuation - it's a new branch)
         message.responseHistory.push({
             content: newContent,
             model: newModel,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            continuation: [] // New branch starts empty
         });
 
         // Update current display to new response
@@ -157,7 +213,7 @@ const ChatHistory = {
         return true;
     },
 
-    // Navigate response history
+    // Navigate response history with branch support
     navigateHistory(messageIndex, direction) {
         if (!this.currentChatId || !this.chats[this.currentChatId]) return null;
 
@@ -172,14 +228,45 @@ const ChatHistory = {
         if (newIndex >= message.responseHistory.length) newIndex = message.responseHistory.length - 1;
 
         if (newIndex !== message.currentHistoryIndex) {
+            // Save current continuation before switching
+            const currentEntry = message.responseHistory[message.currentHistoryIndex];
+            if (currentEntry) {
+                currentEntry.continuation = messages.slice(messageIndex + 1);
+            }
+
+            // Switch to new history entry
             message.currentHistoryIndex = newIndex;
             const historyItem = message.responseHistory[newIndex];
             message.content = historyItem.content;
             message.model = historyItem.model;
+
+            // Restore continuation from new branch
+            const continuation = historyItem.continuation || [];
+            this.chats[this.currentChatId].messages = [
+                ...messages.slice(0, messageIndex + 1),
+                ...continuation
+            ];
+
             this.save();
             return historyItem;
         }
         return null;
+    },
+
+    // Get branch info for a message
+    getBranchInfo(messageIndex) {
+        if (!this.currentChatId || !this.chats[this.currentChatId]) return null;
+
+        const messages = this.chats[this.currentChatId].messages;
+        if (messageIndex < 0 || messageIndex >= messages.length) return null;
+
+        const message = messages[messageIndex];
+        if (!message.responseHistory || message.responseHistory.length <= 1) return null;
+
+        return {
+            current: message.currentHistoryIndex + 1,
+            total: message.responseHistory.length
+        };
     },
 
     save() {

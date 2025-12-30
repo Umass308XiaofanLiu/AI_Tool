@@ -173,12 +173,54 @@ const ChatUI = {
                 continue;
             }
 
-            // Determine if it's a text-based file
-            const textExtensions = ['.txt', '.md', '.json', '.csv', '.xml', '.html', '.css', '.js', '.py', '.java', '.c', '.cpp', '.h', '.sh', '.yaml', '.yml', '.log'];
+            // Determine if it's a text-based file (including code files)
+            const textExtensions = [
+                // Text files
+                '.txt', '.md', '.json', '.csv', '.xml', '.yaml', '.yml', '.log', '.ini', '.conf', '.cfg',
+                // Web development
+                '.html', '.htm', '.css', '.scss', '.sass', '.less', '.js', '.jsx', '.ts', '.tsx', '.vue', '.svelte',
+                // Programming languages
+                '.py', '.pyw', '.pyi',           // Python
+                '.java', '.kt', '.kts',          // Java/Kotlin
+                '.c', '.h', '.cpp', '.hpp', '.cc', '.cxx', '.hxx',  // C/C++
+                '.cs',                           // C#
+                '.go',                           // Go
+                '.rs',                           // Rust
+                '.swift',                        // Swift
+                '.m', '.mm',                     // Objective-C / MATLAB
+                '.r', '.R',                      // R
+                '.rb',                           // Ruby
+                '.php',                          // PHP
+                '.pl', '.pm',                    // Perl
+                '.lua',                          // Lua
+                '.scala',                        // Scala
+                '.groovy',                       // Groovy
+                '.dart',                         // Dart
+                '.jl',                           // Julia
+                '.hs',                           // Haskell
+                '.clj', '.cljs', '.cljc',        // Clojure
+                '.ex', '.exs',                   // Elixir
+                '.erl',                          // Erlang
+                '.ml', '.mli',                   // OCaml
+                '.fs', '.fsi', '.fsx',           // F#
+                '.f90', '.f95', '.f03', '.f',    // Fortran
+                // Shell scripts
+                '.sh', '.bash', '.zsh', '.fish', '.ps1', '.bat', '.cmd',
+                // Database
+                '.sql',
+                // Assembly
+                '.asm', '.s',
+                // Hardware description
+                '.v', '.sv', '.vhd', '.vhdl',
+                // Other
+                '.ipynb', '.tex', '.bib', '.toml', '.dockerfile'
+            ];
             const fileName = file.name.toLowerCase();
             const isTextFile = textExtensions.some(ext => fileName.endsWith(ext)) ||
                               file.type.startsWith('text/') ||
-                              file.type === 'application/json';
+                              file.type === 'application/json' ||
+                              file.type === 'application/javascript' ||
+                              file.type === 'application/typescript';
             const isPDF = file.type === 'application/pdf' || fileName.endsWith('.pdf');
 
             // Create file object with preview
@@ -580,6 +622,12 @@ const ChatUI = {
         const lastUserMsg = messagesUpTo.filter(m => m.role === 'user').pop();
         if (!lastUserMsg) return;
 
+        // Prepare for regeneration - this stores the current branch
+        ChatHistory.prepareRegenerate(messageIndex);
+
+        // Clear UI from this message onwards and show streaming placeholder
+        this.clearMessagesFrom(messageIndex);
+
         // Get selected model
         const selector = document.getElementById('model-selector');
         const [provider, modelId] = selector.value.split(':');
@@ -631,8 +679,8 @@ const ChatUI = {
             // Finish streaming display
             this.finishStreaming();
 
-            // Update message with history instead of replacing
-            ChatHistory.updateMessageWithHistory(messageIndex, fullResponse, modelName);
+            // Complete regeneration - add new response as new branch
+            ChatHistory.completeRegenerate(messageIndex, fullResponse, modelName);
 
             // Reload UI to show updated message with history navigation
             this.loadMessages(ChatHistory.getMessages());
@@ -927,6 +975,14 @@ const ChatUI = {
         this.finishStreaming();
         this.setGenerating(false);
         this.focusInput();
+    },
+
+    clearMessagesFrom(messageIndex) {
+        // Remove all message elements from messageIndex onwards
+        const messageElements = this.messagesContainer.querySelectorAll('.message');
+        for (let i = messageIndex; i < messageElements.length; i++) {
+            messageElements[i].remove();
+        }
     },
 
     clear() {
