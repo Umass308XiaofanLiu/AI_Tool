@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Chat Client</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>AI Chat</title>
     <!-- KaTeX for LaTeX rendering -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
@@ -16,7 +16,12 @@
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <button id="new-chat-btn">+ New Chat</button>
+                <button id="new-chat-btn">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
+                    </svg>
+                    <span>New Chat</span>
+                </button>
             </div>
 
             <div class="chat-list" id="chat-list">
@@ -24,7 +29,12 @@
             </div>
 
             <div class="sidebar-footer">
-                <button id="settings-btn" title="Settings">⚙️</button>
+                <button id="settings-btn" title="Settings">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+                    </svg>
+                </button>
             </div>
         </aside>
 
@@ -33,21 +43,34 @@
             <!-- Header -->
             <header class="header">
                 <div class="header-left">
-                    <button id="toggle-sidebar-btn">☰</button>
+                    <button id="toggle-sidebar-btn">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round"/>
+                        </svg>
+                    </button>
                     <span class="header-title">AI Chat</span>
                 </div>
                 <div class="header-right">
-                    <span class="model-selector-label">Model:</span>
-                    <select id="model-selector">
-                        <!-- Models will be populated by JavaScript -->
-                    </select>
+                    <div class="model-selector-wrapper">
+                        <select id="model-selector">
+                            <!-- Models will be populated by JavaScript -->
+                        </select>
+                        <svg class="select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
                 </div>
             </header>
 
             <!-- Welcome Screen -->
             <div class="welcome-screen" id="welcome-screen">
-                <h1 class="welcome-title">AI Chat Client</h1>
-                <p class="welcome-subtitle">Start a new conversation or select one from the sidebar</p>
+                <div class="welcome-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10z" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <h1 class="welcome-title">AI Chat</h1>
+                <p class="welcome-subtitle">Start a conversation to begin</p>
             </div>
 
             <!-- Chat Area -->
@@ -62,10 +85,14 @@
                 <div class="input-container">
                     <textarea
                         id="message-input"
-                        placeholder="Type your message..."
+                        placeholder="Message..."
                         rows="1"
                     ></textarea>
-                    <button id="send-btn">Send</button>
+                    <button id="send-btn">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
                 </div>
             </div>
         </main>
@@ -76,14 +103,41 @@
         <div class="settings-dialog">
             <div class="settings-header">
                 <h2 class="settings-title">Settings</h2>
-                <button id="settings-close-btn">&times;</button>
+                <button id="settings-close-btn">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12" stroke-linecap="round"/>
+                    </svg>
+                </button>
             </div>
 
             <div class="settings-tabs">
-                <button class="settings-tab-btn active" data-tab="api-keys">API Keys</button>
-                <button class="settings-tab-btn" data-tab="lmstudio">LM Studio</button>
-                <button class="settings-tab-btn" data-tab="models">Model Visibility</button>
-                <button class="settings-tab-btn" data-tab="appearance">Appearance</button>
+                <button class="settings-tab-btn active" data-tab="api-keys">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+                    </svg>
+                    <span>API Keys</span>
+                </button>
+                <button class="settings-tab-btn" data-tab="lmstudio">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="2" y="3" width="20" height="14" rx="2"/>
+                        <path d="M8 21h8M12 17v4"/>
+                    </svg>
+                    <span>Local</span>
+                </button>
+                <button class="settings-tab-btn" data-tab="models">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                    </svg>
+                    <span>Models</span>
+                </button>
+                <button class="settings-tab-btn" data-tab="appearance">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="12" r="5"/>
+                        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                    </svg>
+                    <span>Theme</span>
+                </button>
             </div>
 
             <div class="settings-content">
@@ -92,68 +146,112 @@
                     <!-- Google Gemini -->
                     <div class="api-section">
                         <div class="api-section-header">
-                            <span class="api-icon" style="color: #4285f4;">🌐</span>
-                            <h3 class="section-title">GOOGLE GEMINI API</h3>
+                            <div class="api-icon gemini">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                                </svg>
+                            </div>
+                            <h3 class="section-title">Google Gemini</h3>
                         </div>
                         <div class="form-group">
                             <div class="input-with-button">
-                                <input type="password" id="gemini-key" placeholder="Enter your Gemini API key...">
-                                <button class="toggle-visibility-btn">👁️</button>
+                                <input type="password" id="gemini-key" placeholder="API Key">
+                                <button class="toggle-visibility-btn" type="button">
+                                    <svg class="icon eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    <svg class="icon eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="display:none">
+                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22"/>
+                                    </svg>
+                                </button>
                             </div>
-                            <p class="api-hint">Get your API key from <a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a></p>
+                            <p class="api-hint">Get key from <a href="https://aistudio.google.com/apikey" target="_blank">AI Studio</a></p>
                         </div>
                     </div>
 
                     <!-- OpenAI -->
                     <div class="api-section">
                         <div class="api-section-header">
-                            <span class="api-icon" style="color: #10a37f;">🤖</span>
-                            <h3 class="section-title">OPENAI API</h3>
+                            <div class="api-icon openai">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M22.2 8.38c.34-1.05.24-2.2-.3-3.15a4.1 4.1 0 0 0-4.42-1.88 4.1 4.1 0 0 0-7.28 2.06 4.1 4.1 0 0 0-2.74 1.99 4.1 4.1 0 0 0 .52 4.78 4.1 4.1 0 0 0 .3 3.15 4.1 4.1 0 0 0 4.42 1.88 4.1 4.1 0 0 0 3.09 1.38 4.1 4.1 0 0 0 3.89-2.81 4.1 4.1 0 0 0 2.74-1.99 4.1 4.1 0 0 0-.52-4.78"/>
+                                </svg>
+                            </div>
+                            <h3 class="section-title">OpenAI</h3>
                         </div>
                         <div class="form-group">
                             <div class="input-with-button">
-                                <input type="password" id="openai-key" placeholder="Enter your OpenAI API key...">
-                                <button class="toggle-visibility-btn">👁️</button>
+                                <input type="password" id="openai-key" placeholder="API Key">
+                                <button class="toggle-visibility-btn" type="button">
+                                    <svg class="icon eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    <svg class="icon eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="display:none">
+                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22"/>
+                                    </svg>
+                                </button>
                             </div>
-                            <p class="api-hint">Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank">OpenAI Platform</a></p>
+                            <p class="api-hint">Get key from <a href="https://platform.openai.com/api-keys" target="_blank">OpenAI</a></p>
                         </div>
                     </div>
 
                     <!-- Anthropic Claude -->
                     <div class="api-section">
                         <div class="api-section-header">
-                            <span class="api-icon" style="color: #d97706;">🔶</span>
-                            <h3 class="section-title">ANTHROPIC CLAUDE API</h3>
+                            <div class="api-icon claude">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93s3.06-7.44 7-7.93v15.86zm2 0V4.07c3.94.49 7 3.85 7 7.93s-3.06 7.44-7 7.93z"/>
+                                </svg>
+                            </div>
+                            <h3 class="section-title">Anthropic Claude</h3>
                         </div>
                         <div class="form-group">
                             <div class="input-with-button">
-                                <input type="password" id="anthropic-key" placeholder="Enter your Anthropic API key...">
-                                <button class="toggle-visibility-btn">👁️</button>
+                                <input type="password" id="anthropic-key" placeholder="API Key">
+                                <button class="toggle-visibility-btn" type="button">
+                                    <svg class="icon eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    <svg class="icon eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="display:none">
+                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22"/>
+                                    </svg>
+                                </button>
                             </div>
-                            <p class="api-hint">Get your API key from <a href="https://console.anthropic.com/" target="_blank">Anthropic Console</a></p>
+                            <p class="api-hint">Get key from <a href="https://console.anthropic.com/" target="_blank">Anthropic</a></p>
                         </div>
                         <div class="form-group">
-                            <label for="anthropic-proxy">PROXY URL (REQUIRED FOR CORS)</label>
-                            <div class="input-with-icon">
-                                <span class="input-icon">🌐</span>
-                                <input type="text" id="anthropic-proxy" placeholder="https://your-claude-proxy.workers.dev">
-                            </div>
-                            <p class="api-hint">Claude API requires a CORS proxy. Use <a href="https://workers.cloudflare.com/" target="_blank">Cloudflare Workers</a> to create one.</p>
+                            <label for="anthropic-proxy">Proxy URL (for CORS)</label>
+                            <input type="text" id="anthropic-proxy" placeholder="https://your-proxy.workers.dev">
                         </div>
                     </div>
 
                     <!-- DeepSeek -->
                     <div class="api-section">
                         <div class="api-section-header">
-                            <span class="api-icon" style="color: #6366f1;">🔮</span>
-                            <h3 class="section-title">DEEPSEEK API</h3>
+                            <div class="api-icon deepseek">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                </svg>
+                            </div>
+                            <h3 class="section-title">DeepSeek</h3>
                         </div>
                         <div class="form-group">
                             <div class="input-with-button">
-                                <input type="password" id="deepseek-key" placeholder="Enter your DeepSeek API key...">
-                                <button class="toggle-visibility-btn">👁️</button>
+                                <input type="password" id="deepseek-key" placeholder="API Key">
+                                <button class="toggle-visibility-btn" type="button">
+                                    <svg class="icon eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    <svg class="icon eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="display:none">
+                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22"/>
+                                    </svg>
+                                </button>
                             </div>
-                            <p class="api-hint">Get your API key from <a href="https://platform.deepseek.com/" target="_blank">DeepSeek Platform</a></p>
+                            <p class="api-hint">Get key from <a href="https://platform.deepseek.com/" target="_blank">DeepSeek</a></p>
                         </div>
                     </div>
                 </div>
@@ -162,23 +260,34 @@
                 <div class="settings-tab-content" id="tab-lmstudio">
                     <div class="api-section">
                         <div class="api-section-header">
-                            <span class="api-icon">💻</span>
-                            <h3 class="section-title">LM STUDIO CONNECTION</h3>
+                            <div class="api-icon local">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <rect x="2" y="3" width="20" height="14" rx="2"/>
+                                    <path d="M8 21h8M12 17v4"/>
+                                </svg>
+                            </div>
+                            <h3 class="section-title">LM Studio</h3>
                         </div>
                         <div class="form-group">
                             <label for="lmstudio-url">Server URL</label>
                             <input type="text" id="lmstudio-url" placeholder="http://localhost:1234">
                         </div>
                         <div class="connect-row">
-                            <button id="lmstudio-connect-btn">Connect & Verify</button>
+                            <button id="lmstudio-connect-btn">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                    <polyline points="22 4 12 14.01 9 11.01"/>
+                                </svg>
+                                <span>Connect</span>
+                            </button>
                             <span id="lmstudio-status" class="connection-status"></span>
                         </div>
                     </div>
 
-                    <div class="api-section" style="margin-top: 24px;">
-                        <h3 class="section-title">DETECTED MODELS</h3>
+                    <div class="api-section">
+                        <h3 class="section-title">Detected Models</h3>
                         <div id="lmstudio-models-list">
-                            <p class="no-models">Click "Connect & Verify" to detect models</p>
+                            <p class="no-models">Connect to see models</p>
                         </div>
                     </div>
                 </div>
@@ -188,75 +297,91 @@
                     <!-- Online Models -->
                     <div class="visibility-section">
                         <div class="visibility-header">
-                            <span class="visibility-icon">🌐</span>
-                            <h3>ONLINE MODELS VISIBILITY</h3>
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                            </svg>
+                            <h3>Online Models</h3>
                         </div>
-                        <p class="visibility-hint">Select which online models to show in the model selector.</p>
+                        <p class="visibility-hint">Toggle model visibility</p>
 
                         <div class="models-grid">
                             <!-- Gemini -->
-                            <div class="checkbox-item">
+                            <label class="checkbox-item">
                                 <input type="checkbox" class="model-visibility-checkbox" data-model="gemini-2.5-flash-lite" id="vis-gemini-25-flash-lite" checked>
-                                <label for="vis-gemini-25-flash-lite" style="color: #4285f4;">Gemini 2.5 Flash Lite</label>
-                            </div>
-                            <div class="checkbox-item">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label gemini">Gemini 2.5 Flash Lite</span>
+                            </label>
+                            <label class="checkbox-item">
                                 <input type="checkbox" class="model-visibility-checkbox" data-model="gemini-3-flash-preview" id="vis-gemini-3-flash-preview" checked>
-                                <label for="vis-gemini-3-flash-preview" style="color: #4285f4;">Gemini 3 Flash</label>
-                            </div>
-                            <div class="checkbox-item">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label gemini">Gemini 3 Flash</span>
+                            </label>
+                            <label class="checkbox-item">
                                 <input type="checkbox" class="model-visibility-checkbox" data-model="gemini-3-pro-preview" id="vis-gemini-3-pro-preview" checked>
-                                <label for="vis-gemini-3-pro-preview" style="color: #4285f4;">Gemini 3 Pro</label>
-                            </div>
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label gemini">Gemini 3 Pro</span>
+                            </label>
 
                             <!-- GPT-5 -->
-                            <div class="checkbox-item">
+                            <label class="checkbox-item">
                                 <input type="checkbox" class="model-visibility-checkbox" data-model="gpt-5-nano" id="vis-gpt-5-nano" checked>
-                                <label for="vis-gpt-5-nano" style="color: #10a37f;">GPT-5 Nano</label>
-                            </div>
-                            <div class="checkbox-item">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label openai">GPT-5 Nano</span>
+                            </label>
+                            <label class="checkbox-item">
                                 <input type="checkbox" class="model-visibility-checkbox" data-model="gpt-5-mini" id="vis-gpt-5-mini" checked>
-                                <label for="vis-gpt-5-mini" style="color: #10a37f;">GPT-5 Mini</label>
-                            </div>
-                            <div class="checkbox-item">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label openai">GPT-5 Mini</span>
+                            </label>
+                            <label class="checkbox-item">
                                 <input type="checkbox" class="model-visibility-checkbox" data-model="gpt-5.2" id="vis-gpt-52" checked>
-                                <label for="vis-gpt-52" style="color: #10a37f;">GPT-5.2</label>
-                            </div>
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label openai">GPT-5.2</span>
+                            </label>
 
                             <!-- Claude 4.5 -->
-                            <div class="checkbox-item">
+                            <label class="checkbox-item">
                                 <input type="checkbox" class="model-visibility-checkbox" data-model="claude-haiku-4-5-20251001" id="vis-claude-haiku-45" checked>
-                                <label for="vis-claude-haiku-45" style="color: #d97706;">Claude Haiku 4.5</label>
-                            </div>
-                            <div class="checkbox-item">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label claude">Claude Haiku 4.5</span>
+                            </label>
+                            <label class="checkbox-item">
                                 <input type="checkbox" class="model-visibility-checkbox" data-model="claude-sonnet-4-5-20250929" id="vis-claude-sonnet-45" checked>
-                                <label for="vis-claude-sonnet-45" style="color: #d97706;">Claude Sonnet 4.5</label>
-                            </div>
-                            <div class="checkbox-item">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label claude">Claude Sonnet 4.5</span>
+                            </label>
+                            <label class="checkbox-item">
                                 <input type="checkbox" class="model-visibility-checkbox" data-model="claude-opus-4-5-20251101" id="vis-claude-opus-45" checked>
-                                <label for="vis-claude-opus-45" style="color: #d97706;">Claude Opus 4.5</label>
-                            </div>
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label claude">Claude Opus 4.5</span>
+                            </label>
 
                             <!-- DeepSeek -->
-                            <div class="checkbox-item">
+                            <label class="checkbox-item">
                                 <input type="checkbox" class="model-visibility-checkbox" data-model="deepseek-chat" id="vis-deepseek-chat" checked>
-                                <label for="vis-deepseek-chat" style="color: #6366f1;">DeepSeek V3.2</label>
-                            </div>
-                            <div class="checkbox-item">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label deepseek">DeepSeek V3.2</span>
+                            </label>
+                            <label class="checkbox-item">
                                 <input type="checkbox" class="model-visibility-checkbox" data-model="deepseek-reasoner" id="vis-deepseek-reasoner" checked>
-                                <label for="vis-deepseek-reasoner" style="color: #6366f1;">DeepSeek V3.2 Reasoner</label>
-                            </div>
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label deepseek">DeepSeek Reasoner</span>
+                            </label>
                         </div>
                     </div>
 
                     <!-- Local Models -->
-                    <div class="visibility-section" style="margin-top: 24px;">
+                    <div class="visibility-section">
                         <div class="visibility-header">
-                            <span class="visibility-icon">💻</span>
-                            <h3>LOCAL MODELS VISIBILITY</h3>
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                                <path d="M8 21h8M12 17v4"/>
+                            </svg>
+                            <h3>Local Models</h3>
                         </div>
-                        <p class="visibility-hint">Select which local models to show in the model selector.</p>
                         <div id="local-models-visibility" class="models-grid">
-                            <p class="no-models">Connect to LM Studio to see available models</p>
+                            <p class="no-models">Connect to LM Studio first</p>
                         </div>
                     </div>
                 </div>
@@ -265,16 +390,23 @@
                 <div class="settings-tab-content" id="tab-appearance">
                     <div class="api-section">
                         <div class="api-section-header">
-                            <span class="api-icon">🎨</span>
-                            <h3 class="section-title">THEME</h3>
+                            <div class="api-icon theme">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <circle cx="12" cy="12" r="5"/>
+                                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                                </svg>
+                            </div>
+                            <h3 class="section-title">Appearance</h3>
                         </div>
-                        <p class="visibility-hint">Choose your preferred color scheme.</p>
 
                         <div class="theme-options">
                             <label class="theme-option">
                                 <input type="radio" name="theme" value="light">
                                 <span class="theme-option-content">
-                                    <span class="theme-icon">☀️</span>
+                                    <svg class="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <circle cx="12" cy="12" r="5"/>
+                                        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                                    </svg>
                                     <span class="theme-label">Light</span>
                                 </span>
                             </label>
@@ -282,7 +414,9 @@
                             <label class="theme-option">
                                 <input type="radio" name="theme" value="dark">
                                 <span class="theme-option-content">
-                                    <span class="theme-icon">🌙</span>
+                                    <svg class="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                                    </svg>
                                     <span class="theme-label">Dark</span>
                                 </span>
                             </label>
@@ -290,7 +424,10 @@
                             <label class="theme-option">
                                 <input type="radio" name="theme" value="system" checked>
                                 <span class="theme-option-content">
-                                    <span class="theme-icon">💻</span>
+                                    <svg class="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <rect x="2" y="3" width="20" height="14" rx="2"/>
+                                        <path d="M8 21h8M12 17v4"/>
+                                    </svg>
                                     <span class="theme-label">System</span>
                                 </span>
                             </label>
@@ -301,7 +438,7 @@
 
             <div class="settings-footer">
                 <button id="settings-cancel-btn">Cancel</button>
-                <button id="settings-save-btn">Save Settings</button>
+                <button id="settings-save-btn">Save</button>
             </div>
         </div>
     </div>

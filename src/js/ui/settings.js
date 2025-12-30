@@ -49,12 +49,16 @@ const SettingsDialog = {
         document.querySelectorAll('.toggle-visibility-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const input = btn.previousElementSibling;
+                const eyeOpen = btn.querySelector('.eye-open');
+                const eyeClosed = btn.querySelector('.eye-closed');
                 if (input.type === 'password') {
                     input.type = 'text';
-                    btn.textContent = '🙈';
+                    if (eyeOpen) eyeOpen.style.display = 'none';
+                    if (eyeClosed) eyeClosed.style.display = 'block';
                 } else {
                     input.type = 'password';
-                    btn.textContent = '👁️';
+                    if (eyeOpen) eyeOpen.style.display = 'block';
+                    if (eyeClosed) eyeClosed.style.display = 'none';
                 }
             });
         });
@@ -148,14 +152,15 @@ const SettingsDialog = {
             const modelName = model.name || model;
             const isChecked = visibleLocalModels[modelId] !== false;
             return `
-                <div class="checkbox-item">
+                <label class="checkbox-item">
                     <input type="checkbox"
                            class="local-model-visibility-checkbox"
                            data-model="${modelId}"
                            id="vis-local-${modelId.replace(/[^a-z0-9]/gi, '-')}"
                            ${isChecked ? 'checked' : ''}>
-                    <label for="vis-local-${modelId.replace(/[^a-z0-9]/gi, '-')}">${modelName}</label>
-                </div>
+                    <span class="checkbox-custom"></span>
+                    <span class="checkbox-label">${modelName}</span>
+                </label>
             `;
         }).join('');
     },
@@ -210,7 +215,10 @@ const SettingsDialog = {
 
         container.innerHTML = models.map(m => `
             <div class="lmstudio-model-item">
-                <span class="model-icon">🤖</span>
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="2" y="3" width="20" height="14" rx="2"/>
+                    <path d="M8 21h8M12 17v4"/>
+                </svg>
                 <span class="model-name">${m.name || m.id}</span>
             </div>
         `).join('');
