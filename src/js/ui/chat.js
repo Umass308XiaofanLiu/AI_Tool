@@ -452,6 +452,8 @@ const ChatUI = {
 
         if (role === 'user') {
             // User message - right aligned bubble
+            const idx = messageIndex !== null ? messageIndex : ChatHistory.getMessages().length;
+
             const bubbleDiv = document.createElement('div');
             bubbleDiv.className = 'message-bubble';
 
@@ -466,6 +468,19 @@ const ChatUI = {
             contentDiv.innerHTML = MarkdownParser.parse(content);
 
             bubbleDiv.appendChild(contentDiv);
+
+            // Add edit button for user messages
+            const editBtn = document.createElement('button');
+            editBtn.className = 'user-message-edit-btn';
+            editBtn.title = 'Edit message';
+            editBtn.onclick = () => this.editUserMessage(idx);
+            editBtn.innerHTML = `
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            `;
+            bubbleDiv.appendChild(editBtn);
+
             msgDiv.appendChild(bubbleDiv);
         } else {
             // Assistant message - centered with icon
@@ -973,6 +988,177 @@ const ChatUI = {
             this.abortController = null;
         }
         this.finishStreaming();
+        this.setGenerating(false);
+        this.focusInput();
+    },
+
+    editUserMessage(messageIndex) {
+        if (this.isGenerating) return;
+
+        const messages = ChatHistory.getMessages();
+        if (messageIndex < 0 || messageIndex >= messages.length) return;
+
+        const message = messages[messageIndex];
+        if (message.role !== 'user') return;
+
+        // Get the message element
+        const messageElements = this.messagesContainer.querySelectorAll('.message');
+        const msgElement = messageElements[messageIndex];
+        if (!msgElement) return;
+
+        // Find the bubble
+        const bubble = msgElement.querySelector('.message-bubble');
+        if (!bubble) return;
+
+        // Hide original content and edit button
+        const contentDiv = bubble.querySelector('.message-content');
+        const editBtn = bubble.querySelector('.user-message-edit-btn');
+        const attachmentsDiv = bubble.querySelector('.message-attachments');
+
+        if (contentDiv) contentDiv.style.display = 'none';
+        if (editBtn) editBtn.style.display = 'none';
+
+        // Create edit form
+        const editForm = document.createElement('div');
+        editForm.className = 'user-message-edit-form';
+        editForm.innerHTML = `
+            <textarea class="edit-textarea">${message.content}</textarea>
+            <div class="edit-form-actions">
+                <button class="edit-cancel-btn" type="button">Cancel</button>
+                <button class="edit-resend-btn" type="button">Resend</button>
+            </div>
+        `;
+
+        bubble.appendChild(editForm);
+
+        // Focus and auto-resize textarea
+        const textarea = editForm.querySelector('.edit-textarea');
+        textarea.focus();
+        textarea.style.height = 'auto';
+        textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
+
+        textarea.addEventListener('input', () => {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
+        });
+
+        // Bind button events
+        editForm.querySelector('.edit-cancel-btn').addEventListener('click', () => {
+            this.cancelEditUserMessage(msgElement, editForm, contentDiv, editBtn);
+        });
+
+        editForm.querySelector('.edit-resend-btn').addEventListener('click', () => {
+            const newContent = textarea.value.trim();
+            if (newContent) {
+                this.resendUserMessage(messageIndex, newContent, message.attachments);
+            }
+        });
+
+        // Escape key to cancel
+        textarea.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.cancelEditUserMessage(msgElement, editForm, contentDiv, editBtn);
+            }
+        });
+    },
+
+    cancelEditUserMessage(msgElement, editForm, contentDiv, editBtn) {
+        // Remove edit form
+        if (editForm && editForm.parentNode) {
+            editForm.parentNode.removeChild(editForm);
+        }
+
+        // Show original content and edit button
+        if (contentDiv) contentDiv.style.display = '';
+        if (editBtn) editBtn.style.display = '';
+    },
+
+    async resendUserMessage(messageIndex, newContent, originalAttachments) {
+        if (this.isGenerating) return;
+
+        // Prepare for edit - this saves the current branch
+        ChatHistory.prepareUserEdit(messageIndex);
+
+        // Update the user message content
+        const messages = ChatHistory.getMessages();
+        const userMessage = messages[messageIndex];
+        userMessage.content = newContent;
+        userMessage.timestamp = new Date().toISOString();
+
+        // Truncate messages to include only up to the edited user message
+        ChatHistory.setMessages(messages.slice(0, messageIndex + 1));
+
+        // Clear UI from this message onwards
+        this.clearMessagesFrom(messageIndex);
+
+        // Re-add the edited user message to UI
+        this.addMessage('user', newContent, null, true, messageIndex, originalAttachments);
+
+        // Get selected model
+        const selector = document.getElementById('model-selector');
+        const [provider, modelId] = selector.value.split(':');
+        const modelName = selector.options[selector.selectedIndex].text;
+
+        // Disable input
+        this.setGenerating(true);
+
+        try {
+            // Start streaming display
+            this.startStreaming();
+
+            // Prepare messages for API (with image support)
+            const apiMessages = this.prepareMessagesForAPI(ChatHistory.getMessages());
+
+            // Get settings
+            const settings = Storage.getSettings();
+            let fullResponse = '';
+
+            // Call appropriate API
+            const onChunk = (chunk) => {
+                this.appendToStream(chunk);
+            };
+
+            switch (provider) {
+                case 'openai':
+                    fullResponse = await OpenAIClient.chat(apiMessages, modelId, settings.apiKeys.openai, onChunk);
+                    break;
+                case 'anthropic':
+                    fullResponse = await ClaudeClient.chat(
+                        apiMessages,
+                        modelId,
+                        settings.apiKeys.anthropic,
+                        onChunk,
+                        settings.apiKeys.anthropicProxy
+                    );
+                    break;
+                case 'gemini':
+                    fullResponse = await GeminiClient.chat(apiMessages, modelId, settings.apiKeys.gemini, onChunk);
+                    break;
+                case 'deepseek':
+                    fullResponse = await DeepSeekClient.chat(apiMessages, modelId, settings.apiKeys.deepseek, onChunk);
+                    break;
+                case 'lmstudio':
+                    fullResponse = await LMStudioClient.chat(apiMessages, modelId, settings.lmstudio?.url, onChunk);
+                    break;
+            }
+
+            // Finish streaming display
+            this.finishStreaming();
+
+            // Save assistant message
+            ChatHistory.addMessage('assistant', fullResponse, modelName);
+
+            // Reload UI to show updated message
+            this.loadMessages(ChatHistory.getMessages());
+            Sidebar.refresh();
+
+        } catch (error) {
+            console.error('Resend error:', error);
+            this.finishStreaming();
+            this.addMessage('assistant', `Error: ${error.message}`);
+            ChatHistory.addMessage('assistant', `Error: ${error.message}`);
+        }
+
         this.setGenerating(false);
         this.focusInput();
     },
