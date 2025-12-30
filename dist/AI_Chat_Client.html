@@ -334,11 +334,13 @@ body {
     transition: background-color 0.3s;
 }
 
-/* User Messages - Right aligned bubble */
+/* User Messages - Right aligned bubble, aligned with input box */
 .user-message {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 24px;
     display: flex;
     justify-content: flex-end;
-    padding: 0 24px;
 }
 
 .user-message .message-bubble {
@@ -1037,16 +1039,13 @@ body {
         display: block;
     }
 
-    .user-message {
-        padding: 0 12px;
+    .user-message,
+    .assistant-message {
+        padding: 0 16px;
     }
 
     .user-message .message-bubble {
         max-width: 85%;
-    }
-
-    .assistant-message {
-        padding: 0 12px;
     }
 
     .header {
