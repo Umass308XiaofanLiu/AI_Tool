@@ -10,6 +10,14 @@ const ChatUI = {
     currentStreamingElement: null,
     currentStreamingMsgDiv: null,
 
+    // File handling
+    attachButton: null,
+    fileInput: null,
+    filePreviewContainer: null,
+    pendingFiles: [],
+    imageModal: null,
+    dropOverlay: null,
+
     init() {
         this.messagesContainer = document.getElementById('messages-container');
         this.inputField = document.getElementById('message-input');
@@ -17,8 +25,18 @@ const ChatUI = {
         this.welcomeScreen = document.getElementById('welcome-screen');
         this.chatArea = document.getElementById('chat-area');
 
+        // File handling elements
+        this.attachButton = document.getElementById('attach-btn');
+        this.fileInput = document.getElementById('file-input');
+        this.filePreviewContainer = document.getElementById('file-preview-container');
+        this.imageModal = document.getElementById('image-modal');
+        this.dropOverlay = document.getElementById('drop-overlay');
+
         this.bindEvents();
         this.initModelSelector();
+        this.initFileHandling();
+        this.initImageModal();
+        this.initDragDrop();
 
         // Show welcome or load current chat
         if (ChatHistory.currentChatId && ChatHistory.getCurrentChat()) {
@@ -48,6 +66,207 @@ const ChatUI = {
             this.inputField.style.height = 'auto';
             this.inputField.style.height = Math.min(this.inputField.scrollHeight, 150) + 'px';
         });
+    },
+
+    initFileHandling() {
+        // Attach button
+        this.attachButton.addEventListener('click', () => {
+            this.fileInput.click();
+        });
+
+        // File input change
+        this.fileInput.addEventListener('change', (e) => {
+            this.addFiles(e.target.files);
+            this.fileInput.value = ''; // Reset for same file selection
+        });
+
+        // Paste handler
+        document.addEventListener('paste', (e) => {
+            const items = e.clipboardData?.items;
+            if (items) {
+                const files = [];
+                for (const item of items) {
+                    if (item.kind === 'file') {
+                        const file = item.getAsFile();
+                        if (file) files.push(file);
+                    }
+                }
+                if (files.length > 0) {
+                    e.preventDefault();
+                    this.addFiles(files);
+                }
+            }
+        });
+    },
+
+    initImageModal() {
+        const modal = this.imageModal;
+        const modalImg = document.getElementById('image-modal-img');
+        const closeBtn = document.getElementById('image-modal-close');
+
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    this.closeImageModal();
+                }
+            });
+
+            closeBtn?.addEventListener('click', () => {
+                this.closeImageModal();
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal.classList.contains('visible')) {
+                    this.closeImageModal();
+                }
+            });
+        }
+    },
+
+    initDragDrop() {
+        let dragCounter = 0;
+
+        document.addEventListener('dragenter', (e) => {
+            e.preventDefault();
+            dragCounter++;
+            if (e.dataTransfer.types.includes('Files')) {
+                this.dropOverlay?.classList.add('visible');
+            }
+        });
+
+        document.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dragCounter--;
+            if (dragCounter === 0) {
+                this.dropOverlay?.classList.remove('visible');
+            }
+        });
+
+        document.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        document.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dragCounter = 0;
+            this.dropOverlay?.classList.remove('visible');
+
+            const files = e.dataTransfer?.files;
+            if (files && files.length > 0) {
+                this.addFiles(files);
+            }
+        });
+    },
+
+    addFiles(files) {
+        for (const file of files) {
+            // Check file size (max 20MB)
+            if (file.size > 20 * 1024 * 1024) {
+                alert(`File "${file.name}" is too large. Maximum size is 20MB.`);
+                continue;
+            }
+
+            // Create file object with preview
+            const fileObj = {
+                id: Date.now() + Math.random().toString(36).substr(2, 9),
+                file: file,
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                isImage: file.type.startsWith('image/'),
+                dataUrl: null
+            };
+
+            // Read file for preview and API
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                fileObj.dataUrl = e.target.result;
+                this.updateFilePreview();
+            };
+
+            if (fileObj.isImage) {
+                reader.readAsDataURL(file);
+            } else {
+                reader.readAsDataURL(file);
+            }
+
+            this.pendingFiles.push(fileObj);
+        }
+
+        this.updateFilePreview();
+    },
+
+    removeFile(fileId) {
+        this.pendingFiles = this.pendingFiles.filter(f => f.id !== fileId);
+        this.updateFilePreview();
+    },
+
+    clearFiles() {
+        this.pendingFiles = [];
+        this.updateFilePreview();
+    },
+
+    updateFilePreview() {
+        if (!this.filePreviewContainer) return;
+
+        if (this.pendingFiles.length === 0) {
+            this.filePreviewContainer.classList.remove('has-files');
+            this.filePreviewContainer.innerHTML = '';
+            return;
+        }
+
+        this.filePreviewContainer.classList.add('has-files');
+        this.filePreviewContainer.innerHTML = this.pendingFiles.map(file => {
+            if (file.isImage && file.dataUrl) {
+                return `
+                    <div class="file-preview-item image-preview" data-file-id="${file.id}">
+                        <img src="${file.dataUrl}" alt="${file.name}">
+                        <button class="remove-file-btn" onclick="ChatUI.removeFile('${file.id}')">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 6L6 18M6 6l12 12" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="file-preview-item file-preview" data-file-id="${file.id}">
+                        <svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        <div class="file-info">
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-size">${this.formatFileSize(file.size)}</div>
+                        </div>
+                        <button class="remove-file-btn" onclick="ChatUI.removeFile('${file.id}')">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 6L6 18M6 6l12 12" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+            }
+        }).join('');
+    },
+
+    formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    },
+
+    openImageModal(src) {
+        const modal = this.imageModal;
+        const modalImg = document.getElementById('image-modal-img');
+        if (modal && modalImg) {
+            modalImg.src = src;
+            modal.classList.add('visible');
+        }
+    },
+
+    closeImageModal() {
+        this.imageModal?.classList.remove('visible');
     },
 
     initModelSelector() {
@@ -146,12 +365,12 @@ const ChatUI = {
     loadMessages(messages) {
         this.messagesContainer.innerHTML = '';
         messages.forEach((msg, index) => {
-            this.addMessage(msg.role, msg.content, msg.model, false, index);
+            this.addMessage(msg.role, msg.content, msg.model, false, index, msg.attachments);
         });
         this.scrollToBottom();
     },
 
-    addMessage(role, content, model = null, scroll = true, messageIndex = null) {
+    addMessage(role, content, model = null, scroll = true, messageIndex = null, attachments = null) {
         const msgDiv = document.createElement('div');
         msgDiv.className = `message ${role}-message`;
 
@@ -159,6 +378,12 @@ const ChatUI = {
             // User message - right aligned bubble
             const bubbleDiv = document.createElement('div');
             bubbleDiv.className = 'message-bubble';
+
+            // Add attachments if present
+            if (attachments && attachments.length > 0) {
+                const attachmentsDiv = this.createAttachmentsDiv(attachments);
+                bubbleDiv.appendChild(attachmentsDiv);
+            }
 
             const contentDiv = document.createElement('div');
             contentDiv.className = 'message-content';
@@ -215,6 +440,37 @@ const ChatUI = {
         if (scroll) {
             this.scrollToBottom();
         }
+    },
+
+    createAttachmentsDiv(attachments) {
+        const div = document.createElement('div');
+        div.className = 'message-attachments';
+
+        attachments.forEach(att => {
+            if (att.isImage && att.dataUrl) {
+                const imgWrapper = document.createElement('div');
+                imgWrapper.className = 'message-attachment image-attachment';
+                const img = document.createElement('img');
+                img.src = att.dataUrl;
+                img.alt = att.name;
+                img.onclick = () => this.openImageModal(att.dataUrl);
+                imgWrapper.appendChild(img);
+                div.appendChild(imgWrapper);
+            } else {
+                const fileWrapper = document.createElement('div');
+                fileWrapper.className = 'message-attachment file-attachment';
+                fileWrapper.innerHTML = `
+                    <svg class="file-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    <span class="file-name">${att.name}</span>
+                `;
+                div.appendChild(fileWrapper);
+            }
+        });
+
+        return div;
     },
 
     escapeAttr(str) {
@@ -279,11 +535,8 @@ const ChatUI = {
             // Start streaming display
             this.startStreaming();
 
-            // Prepare messages for API
-            const apiMessages = messagesUpTo.map(m => ({
-                role: m.role,
-                content: m.content
-            }));
+            // Prepare messages for API (with image support)
+            const apiMessages = this.prepareMessagesForAPI(messagesUpTo);
 
             // Get settings
             const settings = Storage.getSettings();
@@ -334,6 +587,50 @@ const ChatUI = {
 
         this.setGenerating(false);
         this.focusInput();
+    },
+
+    prepareMessagesForAPI(messages) {
+        return messages.map(m => {
+            // If message has image attachments, format for vision APIs
+            if (m.attachments && m.attachments.some(a => a.isImage)) {
+                const content = [];
+
+                // Add images first
+                m.attachments.forEach(att => {
+                    if (att.isImage && att.dataUrl) {
+                        // Extract base64 from data URL
+                        const base64Match = att.dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+                        if (base64Match) {
+                            content.push({
+                                type: 'image_url',
+                                image_url: {
+                                    url: att.dataUrl
+                                }
+                            });
+                        }
+                    }
+                });
+
+                // Add text content
+                if (m.content) {
+                    content.push({
+                        type: 'text',
+                        text: m.content
+                    });
+                }
+
+                return {
+                    role: m.role,
+                    content: content
+                };
+            }
+
+            // Regular text message
+            return {
+                role: m.role,
+                content: m.content
+            };
+        });
     },
 
     startStreaming() {
@@ -416,7 +713,10 @@ const ChatUI = {
 
     async sendMessage() {
         const content = this.inputField.value.trim();
-        if (!content || this.isGenerating) return;
+        const hasFiles = this.pendingFiles.length > 0;
+
+        if (!content && !hasFiles) return;
+        if (this.isGenerating) return;
 
         // Ensure we have a chat
         if (!ChatHistory.currentChatId) {
@@ -425,14 +725,24 @@ const ChatUI = {
             this.showWelcome(false);
         }
 
-        // Add user message
-        this.addMessage('user', content);
-        ChatHistory.addMessage('user', content);
+        // Prepare attachments data
+        const attachments = this.pendingFiles.map(f => ({
+            name: f.name,
+            size: f.size,
+            type: f.type,
+            isImage: f.isImage,
+            dataUrl: f.dataUrl
+        }));
+
+        // Add user message with attachments
+        this.addMessage('user', content, null, true, null, attachments);
+        ChatHistory.addMessage('user', content, null, attachments);
         Sidebar.refresh();
 
-        // Clear input
+        // Clear input and files
         this.inputField.value = '';
         this.inputField.style.height = 'auto';
+        this.clearFiles();
 
         // Get selected model
         const selector = document.getElementById('model-selector');
@@ -446,11 +756,8 @@ const ChatUI = {
             // Start streaming display
             this.startStreaming();
 
-            // Prepare messages for API
-            const messages = ChatHistory.getMessages().map(m => ({
-                role: m.role,
-                content: m.content
-            }));
+            // Prepare messages for API (with image support)
+            const messages = this.prepareMessagesForAPI(ChatHistory.getMessages());
 
             // Get settings
             const settings = Storage.getSettings();
@@ -507,7 +814,18 @@ const ChatUI = {
         this.isGenerating = generating;
         this.sendButton.disabled = generating;
         this.inputField.disabled = generating;
-        this.sendButton.textContent = generating ? '...' : 'Send';
+
+        // Update send button icon
+        if (generating) {
+            this.sendButton.innerHTML = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+            </svg>`;
+        } else {
+            this.sendButton.innerHTML = `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>`;
+        }
     },
 
     clear() {
