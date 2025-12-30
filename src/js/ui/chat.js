@@ -1076,12 +1076,38 @@ const ChatUI = {
     async resendUserMessage(messageIndex, newContent, originalAttachments) {
         if (this.isGenerating) return;
 
-        // Prepare for edit - this saves the current branch
-        ChatHistory.prepareUserEdit(messageIndex);
-
-        // Update the user message content
         const messages = ChatHistory.getMessages();
         const userMessage = messages[messageIndex];
+
+        // Check if there's an AI response after this user message
+        const assistantMsgIndex = messageIndex + 1;
+        const hasAssistantResponse = assistantMsgIndex < messages.length &&
+                                      messages[assistantMsgIndex].role === 'assistant';
+
+        // Save the original AI response info for history branching
+        let savedResponseHistory = null;
+        if (hasAssistantResponse) {
+            const assistantMsg = messages[assistantMsgIndex];
+            // Build responseHistory from existing or create new
+            if (assistantMsg.responseHistory) {
+                // Update current entry's continuation
+                const currentEntry = assistantMsg.responseHistory[assistantMsg.currentHistoryIndex];
+                if (currentEntry) {
+                    currentEntry.continuation = messages.slice(assistantMsgIndex + 1);
+                }
+                savedResponseHistory = assistantMsg.responseHistory;
+            } else {
+                // Create new responseHistory with current response
+                savedResponseHistory = [{
+                    content: assistantMsg.content,
+                    model: assistantMsg.model,
+                    timestamp: assistantMsg.timestamp,
+                    continuation: messages.slice(assistantMsgIndex + 1)
+                }];
+            }
+        }
+
+        // Update the user message content
         userMessage.content = newContent;
         userMessage.timestamp = new Date().toISOString();
 
@@ -1145,10 +1171,24 @@ const ChatUI = {
             // Finish streaming display
             this.finishStreaming();
 
-            // Save assistant message
-            ChatHistory.addMessage('assistant', fullResponse, modelName);
+            // Save assistant message with history branching if applicable
+            if (savedResponseHistory) {
+                // Add new response as a new branch in history
+                savedResponseHistory.push({
+                    content: fullResponse,
+                    model: modelName,
+                    timestamp: new Date().toISOString(),
+                    continuation: []
+                });
 
-            // Reload UI to show updated message
+                // Add message with responseHistory
+                ChatHistory.addMessageWithHistory('assistant', fullResponse, modelName, savedResponseHistory);
+            } else {
+                // No previous response, just add normally
+                ChatHistory.addMessage('assistant', fullResponse, modelName);
+            }
+
+            // Reload UI to show updated message with history navigation
             this.loadMessages(ChatHistory.getMessages());
             Sidebar.refresh();
 
