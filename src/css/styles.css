@@ -469,6 +469,112 @@ body {
     display: none;
 }
 
+/* User Message Edit Button */
+.user-message-edit-btn {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    opacity: 0;
+    transition: all 0.15s ease;
+    padding: 0;
+}
+
+.user-message .message-bubble {
+    position: relative;
+    padding-bottom: 32px;
+}
+
+.user-message .message-bubble:hover .user-message-edit-btn {
+    opacity: 1;
+}
+
+.user-message-edit-btn:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    color: var(--text-secondary);
+}
+
+.user-message-edit-btn .icon {
+    width: 14px;
+    height: 14px;
+}
+
+/* User Message Edit Form */
+.user-message-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.user-message-edit-form .edit-textarea {
+    width: 100%;
+    min-height: 60px;
+    max-height: 200px;
+    padding: 12px 14px;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--separator);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-size: 15px;
+    font-family: inherit;
+    line-height: 1.5;
+    resize: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.user-message-edit-form .edit-textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px var(--accent-subtle);
+}
+
+.user-message-edit-form .edit-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.user-message-edit-form .edit-cancel-btn,
+.user-message-edit-form .edit-resend-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.user-message-edit-form .edit-cancel-btn {
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--separator);
+}
+
+.user-message-edit-form .edit-cancel-btn:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.user-message-edit-form .edit-resend-btn {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+}
+
+.user-message-edit-form .edit-resend-btn:hover {
+    background-color: var(--accent-hover);
+}
+
 /* Message Content Styling */
 .message-content h1,
 .message-content h2,

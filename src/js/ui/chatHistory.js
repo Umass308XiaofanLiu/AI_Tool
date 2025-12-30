@@ -185,6 +185,46 @@ const ChatHistory = {
         return true;
     },
 
+    // Prepare for user message edit - stores the original conversation as a branch
+    prepareUserEdit(messageIndex) {
+        if (!this.currentChatId || !this.chats[this.currentChatId]) return false;
+
+        const messages = this.chats[this.currentChatId].messages;
+        if (messageIndex < 0 || messageIndex >= messages.length) return false;
+
+        const message = messages[messageIndex];
+        if (message.role !== 'user') return false;
+
+        // Initialize edit history if not exists
+        if (!message.editHistory) {
+            message.editHistory = [{
+                content: message.content,
+                timestamp: message.timestamp,
+                attachments: message.attachments,
+                continuation: messages.slice(messageIndex + 1) // Store all messages after this
+            }];
+            message.currentEditIndex = 0;
+        } else {
+            // Update current entry's continuation with any new messages
+            const currentEntry = message.editHistory[message.currentEditIndex];
+            if (currentEntry) {
+                currentEntry.continuation = messages.slice(messageIndex + 1);
+            }
+
+            // Add new edit entry
+            message.editHistory.push({
+                content: message.content,
+                timestamp: new Date().toISOString(),
+                attachments: message.attachments,
+                continuation: [] // New branch starts empty
+            });
+            message.currentEditIndex = message.editHistory.length - 1;
+        }
+
+        this.save();
+        return true;
+    },
+
     // Complete regeneration - add new response as new branch
     completeRegenerate(messageIndex, newContent, newModel) {
         if (!this.currentChatId || !this.chats[this.currentChatId]) return false;
