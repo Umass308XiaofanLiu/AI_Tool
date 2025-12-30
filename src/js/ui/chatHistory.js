@@ -56,6 +56,27 @@ const ChatHistory = {
         this.save();
     },
 
+    // Add message with existing responseHistory (for edit/resend with history branching)
+    addMessageWithHistory(role, content, model, responseHistory) {
+        if (!this.currentChatId) {
+            this.createNewChat();
+        }
+
+        const message = {
+            role: role,
+            content: content,
+            timestamp: new Date().toISOString(),
+            model: model,
+            responseHistory: responseHistory,
+            currentHistoryIndex: responseHistory.length - 1 // Point to the newest response
+        };
+
+        this.chats[this.currentChatId].messages.push(message);
+        this.chats[this.currentChatId].updatedAt = new Date().toISOString();
+
+        this.save();
+    },
+
     getMessages(chatId = null) {
         const id = chatId || this.currentChatId;
         if (!id || !this.chats[id]) return [];
