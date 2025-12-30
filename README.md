@@ -47,6 +47,22 @@ python build.py
 # 输出文件位于 dist/AI_Chat_Client.html
 ```
 
+## 支持的模型
+
+| 服务 | 模型 ID | 显示名称 |
+|------|---------|----------|
+| Google Gemini | `gemini-2.5-flash-lite` | Gemini 2.5 Flash Lite |
+| | `gemini-3-flash-preview` | Gemini 3 Flash |
+| | `gemini-3-pro-preview` | Gemini 3 Pro |
+| OpenAI | `gpt-5-nano` | GPT-5 Nano |
+| | `gpt-5-mini` | GPT-5 Mini |
+| | `gpt-5.2` | GPT-5.2 |
+| Anthropic Claude | `claude-haiku-4-5-20251001` | Claude Haiku 4.5 |
+| | `claude-sonnet-4-5-20250929` | Claude Sonnet 4.5 |
+| | `claude-opus-4-5-20251101` | Claude Opus 4.5 |
+| DeepSeek | `deepseek-chat` | DeepSeek V3.2 |
+| | `deepseek-reasoner` | DeepSeek V3.2 Reasoner |
+
 ## 配置说明
 
 ### API 密钥
@@ -55,10 +71,10 @@ python build.py
 
 | 服务 | 说明 |
 |------|------|
-| Google Gemini | 从 Google AI Studio 获取 |
-| OpenAI | 从 OpenAI Platform 获取 |
+| Google Gemini | 从 [Google AI Studio](https://aistudio.google.com/) 获取 |
+| OpenAI | 从 [OpenAI Platform](https://platform.openai.com/) 获取 |
 | Anthropic Claude | 需要 API 密钥 + CORS 代理 URL |
-| DeepSeek | 从 DeepSeek 平台获取 |
+| DeepSeek | 从 [DeepSeek Platform](https://platform.deepseek.com/) 获取 |
 
 ### Claude CORS 代理
 
