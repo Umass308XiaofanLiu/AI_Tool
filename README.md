@@ -4,37 +4,60 @@
 
 ## 功能特点
 
-- **多模型支持**
-  - Google Gemini (2.5 Flash Lite, 3 Flash, 3 Pro)
-  - OpenAI GPT-5 (Nano, Mini, 5.2)
-  - Anthropic Claude 4.5 (Haiku, Sonnet, Opus)
-  - DeepSeek V3.2 (Chat, Reasoner)
-  - LM Studio 本地模型
+### 多模型支持
+- Google Gemini (2.5 Flash Lite, 3 Flash, 3 Pro)
+- OpenAI GPT-5 (Nano, Mini, 5.2)
+- Anthropic Claude 4.5 (Haiku, Sonnet, Opus)
+- DeepSeek V3.2 (Chat, Reasoner)
+- LM Studio 本地模型
 
-- **现代化界面**
-  - 类似 ChatGPT/Claude 的聊天布局
-  - 用户消息右对齐气泡
-  - AI 回复居中显示
-  - 代码块带语言标签和复制按钮
-  - **LaTeX 数学公式渲染** (使用 KaTeX)
-  - **复制和重新生成按钮**
+### iOS 简约风格界面
+- 类似 iOS 的简约设计风格
+- SF Pro 风格字体和圆角设计
+- 浅灰色用户消息气泡
+- SVG 线条图标
+- 灰色齿轮设置图标
+- 深色/浅色主题切换
 
-- **主题切换**
-  - 浅色模式
-  - 深色模式
-  - 跟随系统
+### 文件上传支持
+- **图片上传**: 支持 PNG, JPG, GIF 等格式，可预览和放大查看
+- **文档上传**: 支持 PDF, TXT, MD, JSON, CSV 等
+- **代码文件上传**: 支持 50+ 种编程语言
+  - Python (`.py`, `.pyw`, `.pyi`)
+  - MATLAB (`.m`)
+  - R (`.r`, `.R`)
+  - C/C++ (`.c`, `.h`, `.cpp`, `.hpp`)
+  - Java/Kotlin (`.java`, `.kt`)
+  - Go/Rust/Swift (`.go`, `.rs`, `.swift`)
+  - Julia/Haskell/Clojure (`.jl`, `.hs`, `.clj`)
+  - 更多: Scala, Dart, Lua, Perl, Ruby, PHP, SQL, Fortran, VHDL 等
+- **拖拽上传**: 直接拖拽文件到聊天区域
+- **剪贴板粘贴**: 支持粘贴图片
 
-- **本地存储**
-  - 聊天历史自动保存
-  - API 密钥本地存储
-  - 设置持久化
+### 生成控制
+- **停止生成**: 点击发送按钮（显示为方形停止图标）随时停止 AI 回复
+- **旋转动画**: 生成时按钮周围显示旋转圆圈动画
+
+### 对话分支历史
+- **重新生成**: 点击 Regenerate 生成新回复
+- **历史保留**: 旧回复不会丢失，保存为历史记录
+- **分支导航**: 使用 `◀ 1/3 ▶` 在不同版本间切换
+- **完整分支**: 每个分支保留完整的后续对话
+- **智能上下文**: AI 只根据当前分支的对话链进行回答
+
+### 其他功能
+- 代码块带语言标签和复制按钮
+- LaTeX 数学公式渲染 (KaTeX)
+- 复制消息功能
+- 聊天历史自动保存
+- API 密钥本地存储
 
 ## 使用方法
 
 ### 方式一：直接使用
 
 1. 打开 `dist/AI_Chat_Client.html` 文件
-2. 点击左下角设置按钮
+2. 点击左下角设置按钮（灰色齿轮图标）
 3. 输入所需的 API 密钥
 4. 选择模型开始聊天
 
@@ -96,7 +119,7 @@ AI_Tool/
 │   └── AI_Chat_Client.html  # 构建输出
 └── src/
     ├── css/
-    │   └── styles.css    # 样式文件
+    │   └── styles.css    # 样式文件 (iOS 简约风格)
     ├── html/
     │   └── template.html # HTML 模板
     └── js/
@@ -107,8 +130,8 @@ AI_Tool/
         │   ├── lmstudio.js
         │   └── openai.js
         ├── ui/           # UI 组件
-        │   ├── chat.js
-        │   ├── chatHistory.js
+        │   ├── chat.js       # 聊天界面、文件上传、分支历史
+        │   ├── chatHistory.js # 对话历史管理、分支系统
         │   ├── main.js
         │   ├── settings.js
         │   └── sidebar.js
@@ -123,6 +146,8 @@ AI_Tool/
 - CSS 变量实现主题切换
 - LocalStorage 数据持久化
 - SSE 流式响应处理
+- FileReader API 文件处理
+- SVG 图标系统
 
 ## License
 
