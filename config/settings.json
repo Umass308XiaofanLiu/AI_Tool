@@ -1,0 +1,24 @@
+{
+    "api_keys": {
+        "openai": "",
+        "anthropic": "",
+        "gemini": ""
+    },
+    "lmstudio": {
+        "url": "http://localhost:1234",
+        "available_models": []
+    },
+    "visible_models": {
+        "gpt-4": true,
+        "gpt-4-turbo": true,
+        "gpt-3.5-turbo": true,
+        "claude-3-opus": true,
+        "claude-3-sonnet": true,
+        "claude-3-haiku": true,
+        "gemini-pro": true,
+        "gemini-1.5-pro": true,
+        "lmstudio": true
+    },
+    "current_model": "gpt-4",
+    "theme": "dark"
+}
