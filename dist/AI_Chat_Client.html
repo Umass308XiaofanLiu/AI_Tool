@@ -2678,14 +2678,28 @@ const MarkdownParser = {
         const latexBlocks = [];
         const latexInlines = [];
 
-        // Extract block LaTeX ($$...$$)
-        let html = text.replace(/\$\$([\s\S]*?)\$\$/g, (match, latex) => {
+        // Extract block LaTeX - \[...\] format (must be done before escaping)
+        let html = text.replace(/\\\[([\s\S]*?)\\\]/g, (match, latex) => {
             const id = `LATEX_BLOCK_${latexBlocks.length}`;
             latexBlocks.push(latex.trim());
             return id;
         });
 
-        // Extract inline LaTeX ($...$) - but not $$
+        // Extract block LaTeX - $$...$$ format
+        html = html.replace(/\$\$([\s\S]*?)\$\$/g, (match, latex) => {
+            const id = `LATEX_BLOCK_${latexBlocks.length}`;
+            latexBlocks.push(latex.trim());
+            return id;
+        });
+
+        // Extract inline LaTeX - \(...\) format
+        html = html.replace(/\\\(([\s\S]*?)\\\)/g, (match, latex) => {
+            const id = `LATEX_INLINE_${latexInlines.length}`;
+            latexInlines.push(latex.trim());
+            return id;
+        });
+
+        // Extract inline LaTeX - $...$ format (but not $$)
         html = html.replace(/\$([^\$\n]+?)\$/g, (match, latex) => {
             const id = `LATEX_INLINE_${latexInlines.length}`;
             latexInlines.push(latex.trim());
