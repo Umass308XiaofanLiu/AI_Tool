@@ -19,6 +19,15 @@ const ChatUI = {
     imageModal: null,
     dropOverlay: null,
 
+    // Thinking state
+    thinkingContainer: null,
+    thinkingContent: null,
+    isThinking: false,
+    thinkingText: '',
+    responseText: '',
+    renderTimer: null,
+    lastRenderTime: 0,
+
     init() {
         this.messagesContainer = document.getElementById('messages-container');
         this.inputField = document.getElementById('message-input');
@@ -395,20 +404,43 @@ const ChatUI = {
             }
         });
 
-        // LM Studio models
-        const lmModels = settings.lmstudio?.models || [];
+        // LM Studio models from multiple servers
+        const lmServers = settings.lmstudioServers || [];
         const visibleLocalModels = settings.visibleLocalModels || {};
 
-        lmModels.forEach(model => {
-            const modelId = model.id || model;
-            const modelName = model.name || model;
-            // Check if this specific local model is visible
-            if (visibleLocalModels[modelId] !== false) {
-                const option = document.createElement('option');
-                option.value = `lmstudio:${modelId}`;
-                option.textContent = modelName;
-                selector.appendChild(option);
-            }
+        // Backward compatibility: if no servers but has old lmstudio format
+        if (lmServers.length === 0 && settings.lmstudio?.models?.length > 0) {
+            settings.lmstudio.models.forEach(model => {
+                const modelId = model.id || model;
+                const modelName = model.name || model;
+                if (visibleLocalModels[modelId] !== false) {
+                    const option = document.createElement('option');
+                    option.value = `lmstudio:${modelId}`;
+                    option.textContent = modelName;
+                    selector.appendChild(option);
+                }
+            });
+        }
+
+        // Multi-server models
+        lmServers.forEach((server, idx) => {
+            const serverNum = idx + 1;
+            const serverModels = server.models || [];
+            serverModels.forEach(model => {
+                const modelId = model.id || model;
+                const modelName = model.name || model;
+                const fullModelId = `server${serverNum}:${modelId}`;
+
+                // Check visibility with new format
+                if (visibleLocalModels[fullModelId] !== false) {
+                    const option = document.createElement('option');
+                    // Value includes server URL for routing
+                    option.value = `lmstudio:${serverNum}:${modelId}`;
+                    option.dataset.serverUrl = server.url;
+                    option.textContent = `Server ${serverNum} / ${modelName}`;
+                    selector.appendChild(option);
+                }
+            });
         });
 
         // Set current model
@@ -645,8 +677,31 @@ const ChatUI = {
 
         // Get selected model
         const selector = document.getElementById('model-selector');
-        const [provider, modelId] = selector.value.split(':');
-        const modelName = selector.options[selector.selectedIndex].text;
+        const selectedOption = selector.options[selector.selectedIndex];
+        const modelName = selectedOption.text;
+
+        // Parse model value - handle lmstudio:serverNum:modelId format
+        const modelParts = selector.value.split(':');
+        const provider = modelParts[0];
+        let modelId, lmServerUrl;
+
+        if (provider === 'lmstudio' && modelParts.length >= 3) {
+            const serverNum = parseInt(modelParts[1]);
+            modelId = modelParts.slice(2).join(':');
+            lmServerUrl = selectedOption.dataset?.serverUrl;
+            if (!lmServerUrl) {
+                const settings = Storage.getSettings();
+                const servers = settings.lmstudioServers || [];
+                if (servers[serverNum - 1]) {
+                    lmServerUrl = servers[serverNum - 1].url;
+                }
+            }
+        } else if (provider === 'lmstudio') {
+            modelId = modelParts[1];
+            lmServerUrl = Storage.getSettings().lmstudio?.url;
+        } else {
+            modelId = modelParts[1];
+        }
 
         // Disable input
         this.setGenerating(true);
@@ -687,7 +742,7 @@ const ChatUI = {
                     fullResponse = await DeepSeekClient.chat(apiMessages, modelId, settings.apiKeys.deepseek, onChunk);
                     break;
                 case 'lmstudio':
-                    fullResponse = await LMStudioClient.chat(apiMessages, modelId, settings.lmstudio?.url, onChunk);
+                    fullResponse = await LMStudioClient.chat(apiMessages, modelId, lmServerUrl || settings.lmstudio?.url, onChunk);
                     break;
             }
 
@@ -800,33 +855,151 @@ const ChatUI = {
             <span class="message-model">${modelName}</span>
         `;
 
+        // Create thinking container (initially hidden)
+        const thinkingDiv = document.createElement('div');
+        thinkingDiv.className = 'thinking-container';
+        thinkingDiv.style.display = 'none';
+        thinkingDiv.innerHTML = `
+            <div class="thinking-header" onclick="ChatUI.toggleThinking(this)">
+                <span class="thinking-label">Thinking</span>
+                <svg class="thinking-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                </svg>
+                <svg class="thinking-done-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <svg class="thinking-expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"/>
+                </svg>
+            </div>
+            <div class="thinking-content"></div>
+        `;
+
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content';
 
         msgDiv.appendChild(headerDiv);
+        msgDiv.appendChild(thinkingDiv);
         msgDiv.appendChild(contentDiv);
         this.messagesContainer.appendChild(msgDiv);
 
         this.currentStreamingElement = contentDiv;
         this.currentStreamingMsgDiv = msgDiv;
+        this.thinkingContainer = thinkingDiv;
+        this.thinkingContent = thinkingDiv.querySelector('.thinking-content');
+
+        // Reset thinking state
+        this.isThinking = false;
+        this.thinkingText = '';
+        this.responseText = '';
+        this.lastRenderTime = 0;
+
         this.scrollToBottom();
 
         return contentDiv;
     },
 
+    toggleThinking(header) {
+        const container = header.closest('.thinking-container');
+        if (container) {
+            container.classList.toggle('expanded');
+        }
+    },
+
     appendToStream(text) {
-        if (this.currentStreamingElement) {
-            const currentText = this.currentStreamingElement.dataset.rawText || '';
-            this.currentStreamingElement.dataset.rawText = currentText + text;
-            this.currentStreamingElement.textContent = this.currentStreamingElement.dataset.rawText;
-            this.scrollToBottom();
+        if (!this.currentStreamingElement) return;
+
+        // Build full raw text
+        const currentRaw = this.currentStreamingElement.dataset.rawText || '';
+        const newRaw = currentRaw + text;
+        this.currentStreamingElement.dataset.rawText = newRaw;
+
+        // Parse thinking tags
+        const thinkMatch = newRaw.match(/<think>([\s\S]*?)(<\/think>|$)/);
+
+        if (thinkMatch) {
+            // Show thinking container
+            if (this.thinkingContainer) {
+                this.thinkingContainer.style.display = 'block';
+            }
+
+            const thinkContent = thinkMatch[1];
+            const thinkClosed = thinkMatch[0].includes('</think>');
+
+            // Update thinking text
+            this.thinkingText = thinkContent;
+            if (this.thinkingContent) {
+                this.thinkingContent.textContent = this.thinkingText;
+            }
+
+            // Check if thinking is done
+            if (thinkClosed && !this.isThinking) {
+                this.isThinking = true;
+                if (this.thinkingContainer) {
+                    this.thinkingContainer.classList.add('done');
+                    const label = this.thinkingContainer.querySelector('.thinking-label');
+                    if (label) label.textContent = 'Done';
+                }
+            }
+
+            // Get response text (after </think>)
+            const afterThink = newRaw.split('</think>')[1] || '';
+            this.responseText = afterThink;
+        } else {
+            // No thinking tags, treat as normal response
+            this.responseText = newRaw;
+        }
+
+        // Real-time render with throttling (every 100ms)
+        const now = Date.now();
+        if (now - this.lastRenderTime > 100) {
+            this.renderStreamContent();
+            this.lastRenderTime = now;
+        } else {
+            // Schedule a render for remaining content
+            if (this.renderTimer) clearTimeout(this.renderTimer);
+            this.renderTimer = setTimeout(() => {
+                this.renderStreamContent();
+                this.lastRenderTime = Date.now();
+            }, 100);
+        }
+
+        this.scrollToBottom();
+    },
+
+    renderStreamContent() {
+        if (!this.currentStreamingElement) return;
+
+        // Parse and render response content in real-time
+        if (this.responseText) {
+            this.currentStreamingElement.innerHTML = MarkdownParser.parse(this.responseText);
         }
     },
 
     finishStreaming() {
         if (this.currentStreamingElement) {
+            // Clear any pending render timer
+            if (this.renderTimer) {
+                clearTimeout(this.renderTimer);
+                this.renderTimer = null;
+            }
+
             const rawText = this.currentStreamingElement.dataset.rawText || '';
-            this.currentStreamingElement.innerHTML = MarkdownParser.parse(rawText);
+
+            // Mark thinking as done if it exists
+            if (this.thinkingContainer && this.thinkingContainer.style.display !== 'none') {
+                this.thinkingContainer.classList.add('done');
+                const label = this.thinkingContainer.querySelector('.thinking-label');
+                if (label) label.textContent = 'Done';
+            }
+
+            // Final render of response content
+            if (this.responseText) {
+                this.currentStreamingElement.innerHTML = MarkdownParser.parse(this.responseText);
+            } else {
+                this.currentStreamingElement.innerHTML = MarkdownParser.parse(rawText);
+            }
+
             this.currentStreamingElement.parentElement.classList.remove('streaming');
 
             // Add action buttons
@@ -835,8 +1008,11 @@ const ChatUI = {
                 const actionsDiv = document.createElement('div');
                 actionsDiv.className = 'message-actions';
                 const idx = ChatHistory.getMessages().length; // Will be added after this
+
+                // For copy, use the full response (without thinking tags)
+                const copyContent = this.responseText || rawText;
                 actionsDiv.innerHTML = `
-                    <button class="message-action-btn" onclick="ChatUI.copyMessage(this)" data-content="${this.escapeAttr(rawText)}">
+                    <button class="message-action-btn" onclick="ChatUI.copyMessage(this)" data-content="${this.escapeAttr(copyContent)}">
                         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                             <rect x="9" y="9" width="13" height="13" rx="2"/>
                             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
@@ -854,8 +1030,14 @@ const ChatUI = {
                 msgDiv.appendChild(actionsDiv);
             }
 
+            // Reset state
             this.currentStreamingElement = null;
             this.currentStreamingMsgDiv = null;
+            this.thinkingContainer = null;
+            this.thinkingContent = null;
+            this.isThinking = false;
+            this.thinkingText = '';
+            this.responseText = '';
         }
     },
 
@@ -897,8 +1079,34 @@ const ChatUI = {
 
         // Get selected model
         const selector = document.getElementById('model-selector');
-        const [provider, modelId] = selector.value.split(':');
-        const modelName = selector.options[selector.selectedIndex].text;
+        const selectedOption = selector.options[selector.selectedIndex];
+        const modelName = selectedOption.text;
+
+        // Parse model value - handle lmstudio:serverNum:modelId format
+        const modelParts = selector.value.split(':');
+        const provider = modelParts[0];
+        let modelId, lmServerUrl;
+
+        if (provider === 'lmstudio' && modelParts.length >= 3) {
+            // New format: lmstudio:serverNum:modelId
+            const serverNum = parseInt(modelParts[1]);
+            modelId = modelParts.slice(2).join(':'); // Handle model IDs with colons
+            // Get server URL from dataset or settings
+            lmServerUrl = selectedOption.dataset?.serverUrl;
+            if (!lmServerUrl) {
+                const settings = Storage.getSettings();
+                const servers = settings.lmstudioServers || [];
+                if (servers[serverNum - 1]) {
+                    lmServerUrl = servers[serverNum - 1].url;
+                }
+            }
+        } else if (provider === 'lmstudio') {
+            // Old format: lmstudio:modelId
+            modelId = modelParts[1];
+            lmServerUrl = Storage.getSettings().lmstudio?.url;
+        } else {
+            modelId = modelParts[1];
+        }
 
         // Disable input
         this.setGenerating(true);
@@ -939,7 +1147,7 @@ const ChatUI = {
                     fullResponse = await DeepSeekClient.chat(messages, modelId, settings.apiKeys.deepseek, onChunk);
                     break;
                 case 'lmstudio':
-                    fullResponse = await LMStudioClient.chat(messages, modelId, settings.lmstudio?.url, onChunk);
+                    fullResponse = await LMStudioClient.chat(messages, modelId, lmServerUrl || settings.lmstudio?.url, onChunk);
                     break;
             }
 
@@ -1122,8 +1330,31 @@ const ChatUI = {
 
         // Get selected model
         const selector = document.getElementById('model-selector');
-        const [provider, modelId] = selector.value.split(':');
-        const modelName = selector.options[selector.selectedIndex].text;
+        const selectedOption = selector.options[selector.selectedIndex];
+        const modelName = selectedOption.text;
+
+        // Parse model value - handle lmstudio:serverNum:modelId format
+        const modelParts = selector.value.split(':');
+        const provider = modelParts[0];
+        let modelId, lmServerUrl;
+
+        if (provider === 'lmstudio' && modelParts.length >= 3) {
+            const serverNum = parseInt(modelParts[1]);
+            modelId = modelParts.slice(2).join(':');
+            lmServerUrl = selectedOption.dataset?.serverUrl;
+            if (!lmServerUrl) {
+                const settings = Storage.getSettings();
+                const servers = settings.lmstudioServers || [];
+                if (servers[serverNum - 1]) {
+                    lmServerUrl = servers[serverNum - 1].url;
+                }
+            }
+        } else if (provider === 'lmstudio') {
+            modelId = modelParts[1];
+            lmServerUrl = Storage.getSettings().lmstudio?.url;
+        } else {
+            modelId = modelParts[1];
+        }
 
         // Disable input
         this.setGenerating(true);
@@ -1164,7 +1395,7 @@ const ChatUI = {
                     fullResponse = await DeepSeekClient.chat(apiMessages, modelId, settings.apiKeys.deepseek, onChunk);
                     break;
                 case 'lmstudio':
-                    fullResponse = await LMStudioClient.chat(apiMessages, modelId, settings.lmstudio?.url, onChunk);
+                    fullResponse = await LMStudioClient.chat(apiMessages, modelId, lmServerUrl || settings.lmstudio?.url, onChunk);
                     break;
             }
 

@@ -776,6 +776,98 @@ body {
     51%, 100% { opacity: 0; }
 }
 
+/* Thinking Indicator */
+.thinking-container {
+    margin-bottom: 12px;
+}
+
+.thinking-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background-color: var(--bg-secondary);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    user-select: none;
+}
+
+.thinking-header:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.thinking-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.thinking-spinner {
+    width: 14px;
+    height: 14px;
+    animation: spin 1s linear infinite;
+    color: var(--accent-color);
+}
+
+.thinking-done-icon {
+    width: 14px;
+    height: 14px;
+    color: var(--success-color);
+    display: none;
+}
+
+.thinking-container.done .thinking-spinner {
+    display: none;
+}
+
+.thinking-container.done .thinking-done-icon {
+    display: block;
+}
+
+.thinking-container.done .thinking-label {
+    color: var(--success-color);
+}
+
+.thinking-expand-icon {
+    width: 12px;
+    height: 12px;
+    color: var(--text-tertiary);
+    transition: transform 0.2s ease;
+}
+
+.thinking-container.expanded .thinking-expand-icon {
+    transform: rotate(180deg);
+}
+
+.thinking-content {
+    display: none;
+    margin-top: 8px;
+    padding: 12px 14px;
+    background-color: var(--bg-secondary);
+    border-radius: 10px;
+    border-left: 3px solid var(--accent-color);
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    max-height: 300px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
+
+.thinking-container.expanded .thinking-content {
+    display: block;
+}
+
+.thinking-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.thinking-content::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 2px;
+}
+
 /* ==================== Input Area ==================== */
 .input-area {
     padding: 16px 20px 24px;
@@ -1562,11 +1654,102 @@ body {
     font-size: 14px;
 }
 
+.lmstudio-model-item .model-server-tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 6px;
+    background-color: var(--accent-subtle);
+    color: var(--accent-color);
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
 .no-models {
     color: var(--text-tertiary);
     font-size: 14px;
     text-align: center;
     padding: 20px;
+}
+
+/* Multi-server LM Studio */
+.lmstudio-server-entry {
+    margin-bottom: 16px;
+    padding: 16px;
+    background-color: var(--bg-primary);
+    border-radius: 12px;
+    border: 1px solid var(--separator);
+}
+
+.lmstudio-server-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.lmstudio-server-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.lmstudio-server-remove {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.lmstudio-server-remove:hover {
+    background-color: var(--error-color);
+    color: white;
+}
+
+.lmstudio-server-remove .icon {
+    width: 16px;
+    height: 16px;
+}
+
+.lmstudio-server-entry .form-group {
+    margin-bottom: 12px;
+}
+
+.lmstudio-server-entry .connect-row {
+    margin-top: 8px;
+}
+
+.add-server-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px dashed var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.15s ease;
+}
+
+.add-server-btn:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--accent-color);
+}
+
+.add-server-btn .icon {
+    width: 16px;
+    height: 16px;
 }
 
 /* Model Visibility */
