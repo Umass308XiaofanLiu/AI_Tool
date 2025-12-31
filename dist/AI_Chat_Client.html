@@ -2675,33 +2675,34 @@ const MarkdownParser = {
         if (!text) return '';
 
         // Store LaTeX expressions to protect them from other parsing
+        // Use a format that won't be affected by markdown processing
         const latexBlocks = [];
         const latexInlines = [];
 
         // Extract block LaTeX - \[...\] format (must be done before escaping)
         let html = text.replace(/\\\[([\s\S]*?)\\\]/g, (match, latex) => {
-            const id = `LATEX_BLOCK_${latexBlocks.length}`;
+            const id = `%%LATEXBLOCK${latexBlocks.length}%%`;
             latexBlocks.push(latex.trim());
             return id;
         });
 
         // Extract block LaTeX - $$...$$ format
         html = html.replace(/\$\$([\s\S]*?)\$\$/g, (match, latex) => {
-            const id = `LATEX_BLOCK_${latexBlocks.length}`;
+            const id = `%%LATEXBLOCK${latexBlocks.length}%%`;
             latexBlocks.push(latex.trim());
             return id;
         });
 
         // Extract inline LaTeX - \(...\) format
         html = html.replace(/\\\(([\s\S]*?)\\\)/g, (match, latex) => {
-            const id = `LATEX_INLINE_${latexInlines.length}`;
+            const id = `%%LATEXINLINE${latexInlines.length}%%`;
             latexInlines.push(latex.trim());
             return id;
         });
 
         // Extract inline LaTeX - $...$ format (but not $$)
         html = html.replace(/\$([^\$\n]+?)\$/g, (match, latex) => {
-            const id = `LATEX_INLINE_${latexInlines.length}`;
+            const id = `%%LATEXINLINE${latexInlines.length}%%`;
             latexInlines.push(latex.trim());
             return id;
         });
@@ -2729,9 +2730,9 @@ const MarkdownParser = {
         html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
         html = html.replace(/__([^_]+)__/g, '<strong>$1</strong>');
 
-        // Italic (*text* or _text_)
-        html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-        html = html.replace(/_([^_]+)_/g, '<em>$1</em>');
+        // Italic (*text* or _text_) - be careful not to affect LaTeX placeholders
+        html = html.replace(/(?<![%\w])\*([^*]+)\*(?![%\w])/g, '<em>$1</em>');
+        html = html.replace(/(?<![%\w])_([^_]+)_(?![%\w])/g, '<em>$1</em>');
 
         // Links [text](url)
         html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
@@ -2767,13 +2768,13 @@ const MarkdownParser = {
         // Restore LaTeX block expressions
         latexBlocks.forEach((latex, i) => {
             const rendered = this.renderLatex(latex, true);
-            html = html.replace(`LATEX_BLOCK_${i}`, `<div class="latex-block">${rendered}</div>`);
+            html = html.replace(`%%LATEXBLOCK${i}%%`, `<div class="latex-block">${rendered}</div>`);
         });
 
         // Restore LaTeX inline expressions
         latexInlines.forEach((latex, i) => {
             const rendered = this.renderLatex(latex, false);
-            html = html.replace(`LATEX_INLINE_${i}`, `<span class="latex-inline">${rendered}</span>`);
+            html = html.replace(`%%LATEXINLINE${i}%%`, `<span class="latex-inline">${rendered}</span>`);
         });
 
         return html;
