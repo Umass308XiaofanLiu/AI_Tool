@@ -275,22 +275,21 @@
                                     <path d="M8 21h8M12 17v4"/>
                                 </svg>
                             </div>
-                            <h3 class="section-title">LM Studio</h3>
+                            <h3 class="section-title">LM Studio Servers</h3>
                         </div>
-                        <div class="form-group">
-                            <label for="lmstudio-url">Server URL</label>
-                            <input type="text" id="lmstudio-url" placeholder="http://localhost:1234">
+
+                        <!-- Server list container -->
+                        <div id="lmstudio-servers-container">
+                            <!-- Server entries will be dynamically added here -->
                         </div>
-                        <div class="connect-row">
-                            <button id="lmstudio-connect-btn">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                                    <polyline points="22 4 12 14.01 9 11.01"/>
-                                </svg>
-                                <span>Connect</span>
-                            </button>
-                            <span id="lmstudio-status" class="connection-status"></span>
-                        </div>
+
+                        <!-- Add server button -->
+                        <button id="lmstudio-add-server-btn" class="add-server-btn">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
+                            </svg>
+                            <span>Add Server</span>
+                        </button>
                     </div>
 
                     <div class="api-section">
